@@ -1,18 +1,18 @@
 package com.example.echoun
 
-import android.Manifest
-import android.app.Activity
+import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.provider.OpenableColumns
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,24 +31,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
 import com.example.echoun.ui.theme.EchoUnTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
+import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
 
-private var theFilePathText = mutableStateOf(" none ")
+
+private var theFilePathText = mutableStateOf("none")
 private var thePlayButtonText = mutableStateOf("Start Playing")
 private var asText = mutableStateListOf<String>("App started")
 private var itemsPlayed = 0
 private var isPlaying = false
 private var reqStop = false
+
+private var fileUri = mutableStateOf<Uri?>(null)
+
+//var imageUri by remember {
+//    mutableStateOf<Uri?>(null)
+//}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,51 +72,78 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Column(
-        verticalArrangement = Arrangement.Top,
-        modifier = modifier.padding(8.dp)
-    ) {
-        Text(
-            text = "Hello $name!",
-            fontSize = 24.sp,
-            //lineHeight = 116.sp,
-            textAlign = TextAlign.Center,
-            modifier = modifier.padding(24.dp)
+
+    @Composable
+    fun Greeting(name: String, modifier: Modifier = Modifier) {
+
+        val theFilePicker = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent(),
+            onResult = { uri ->
+                fileUri.value = uri
+                if (uri == null) {
+                    //asText.add(uri.path())
+                } else {
+                    asText.add("Got file!")
+                    asText.add(uri.toString())
+                    val itis = getUriName(this, uri)
+                    asText.add("Name is:")
+                    asText.add(itis)
+                    theFilePathText.value = itis
+                }
+            }
         )
-        Text(
-            text = theFilePathText.value,
-            //fontSize = 36.sp,
-            modifier = Modifier
-                .padding(16.dp)
-                .align(alignment = Alignment.End)
-        )
-        Button(onClick = { openFilePicker() }) {
-            Text("Select File")
+
+        Column(
+            verticalArrangement = Arrangement.Top,
+            modifier = modifier.padding(8.dp)
+        ) {
+            Text(
+                text = "Hello $name!",
+                fontSize = 24.sp,
+                //lineHeight = 116.sp,
+                textAlign = TextAlign.Center,
+                modifier = modifier.padding(24.dp)
+            )
+            Text(
+                text = theFilePathText.value,
+                //fontSize = 36.sp,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(alignment = Alignment.End)
+            )
+            Button(onClick = { openFilePicker() }) {
+                Text("Select File")
+            }
+
+            Button(onClick = { theFilePicker.launch("text/plain") }) {
+                Text("Vocab File Picker")
+            }
+
+
+            Text(
+                text = "File:"
+            )
+            Text(
+                text = theFilePathText.value,
+                //fontSize = 36.sp,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(alignment = Alignment.End)
+            )
+            Button(onClick = {
+                toggleSpeaking()
+            }){
+                Text(thePlayButtonText.value)
+            }
+            Divider(color = Color.Blue, thickness = 1.dp)
+            TextList()
         }
-        Text(
-            text = "File:"
-        )
-        Text(
-            text = theFilePathText.value,
-            //fontSize = 36.sp,
-            modifier = Modifier
-                .padding(8.dp)
-                .align(alignment = Alignment.Start)
-        )
-        Button(onClick = {
-            toggleSpeaking()
-        }){
-            Text(thePlayButtonText.value)
-        }
-        Divider(color = Color.Blue, thickness = 1.dp)
-        TextList()
     }
-}
 
+
+
+}
 
 @Composable
 fun TextList() {
@@ -126,7 +160,7 @@ fun TextList() {
 
 //@Composable
 private fun openFilePicker() {
-    theFilePathText.value = "Bushed!"
+    //theFilePathText.value = "Bushed!"
     asText.add("Pushed!!!")
 
     //val activity = context as Activity
@@ -193,14 +227,14 @@ private fun openFilePicker() {
 
 }
 
-@Preview(showBackground = true,
-    showSystemUi = true)
-@Composable
-fun GreetingPreview() {
-    EchoUnTheme {
-        Greeting("Tim me")
-    }
-}
+//@Preview(showBackground = true,
+//    showSystemUi = true)
+//@Composable
+//fun GreetingPreview() {
+//    EchoUnTheme {
+//        Greeting("Tim me")
+//    }
+//}
 
 
 private fun toggleSpeaking() {
@@ -267,3 +301,150 @@ private fun getdata(myfile: File): String {
     }
     return ""
 }
+
+
+@Throws(IOException::class)
+fun readUri(context: Context, uri: Uri?): ByteArray? {
+    val pdf = context.contentResolver.openFileDescriptor(uri!!, "r")!!
+    assert(pdf.statSize <= Int.MAX_VALUE)
+    val data = ByteArray(pdf.statSize.toInt())
+    val fd = pdf.fileDescriptor
+    val fileStream = FileInputStream(fd)
+    fileStream.read(data)
+    return data
+}
+//
+//public fun idk(uri: Uri) {
+////Uri uri = data.getData();
+//
+//    val bob = getResourceAsStream(uri).bufferedReader().readLines()
+//    try {
+//        InputStream in = getContentResolver().openInputStream(uri);
+//
+//
+//        BufferedReader r = new BufferedReader(new InputStreamReader ( in));
+//        StringBuilder total = new StringBuilder();
+//        for (String line; (line = r.readLine()) != null; ) {
+//            total.append(line).append('\n');
+//        }
+//
+//        String content = total . toString ();
+//
+//
+//    } catch (Exception e) {
+//
+//    }
+//}
+
+private fun getUriName(context: Context, uri: Uri): String {
+    var result = "none"
+    if (uri.scheme == "content") {
+        val cursor = context.contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                asText.add("nameIndex" + nameIndex.toString())
+                result = cursor.getString(nameIndex)
+            }
+        }
+    } else if (uri.toString().startsWith("file:")) {
+        result = File(uri.path).name
+    }
+
+    if (result != "none") {
+        // Initialize a count variable
+        var count = 0
+        //val context = LocalContext.current
+        // Use a try-catch block to handle any exceptions
+        //try {
+            // Get a BufferedReader from the Uri using the ContentResolver and the openInputStream method
+            val bufferedReader = BufferedReader(InputStreamReader(context.contentResolver.openInputStream(uri)))
+
+            // Use a loop to read each line until the end of the file
+            var line = bufferedReader.readLine()
+            while (line != null) {
+                // Check if the line starts with "#"
+                if (line.startsWith("#")) {
+                    // Increment the count variable
+                    count++
+                }
+                // Read the next line
+                line = bufferedReader.readLine()
+            }
+
+            // Close the BufferedReader
+            bufferedReader.close()
+            asText.add("lines with # is " + count.toString())
+
+            // Display the count in a Text composable or do something else with it
+        //    Text(text = "The number of lines that start with # is $count")
+
+        //} catch (e: Exception) {
+            // Handle any exceptions, for example by displaying an error message
+        //    Text(text = "An error occurred: ${e.message}")
+        //}
+    }
+
+
+    return result
+}
+
+//    val txt = uri.toString()
+//    if (txt.startsWith("file:")) {
+//        return "1: " + File (uri.path).name
+//    } else if (txt.startsWith("content:")) {
+//        var result: String = "null"
+//        if (uri.scheme == "content") {
+//            val cursor = context.contentResolver.query (uri, null, null, null, null)
+//            cursor?.use {
+//                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+//                result = "2: " + cursor.getString(nameIndex)
+////                if (it.moveToFirst ()) {
+////                    result = it.getString (it.getColumnIndex (OpenableColumns.DISPLAY_NAME))
+////                }
+//            }
+//        }
+//        if (result == null) {
+//            //result = uri.path
+//            val idk = uri.path
+//            if (idk == null) {
+//
+//            } else {
+//                result = idk
+//                val cut = result.lastIndexOf ('/')
+//                if (cut != -1) {
+//                    result = result.substring (cut + 1)
+//                }
+//
+//            }
+//        }
+//        return "3: " + result
+//    }
+////    var result: String? = null
+////    if (DocumentsContract.isDocumentUri (this, uri)) {
+////        val documentId = DocumentsContract.getDocumentId (uri)
+////        val splits = documentId.split (":")
+////        if (splits.size == 2) {
+////            val id = splits [1]
+////            val column = arrayOf (MediaStore.Images.Media.DATA)
+////            val sel = MediaStore.Images.Media._ID + "=?"
+////            val cursor = contentResolver.query (
+////                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+////                column, sel, arrayOf (id), null
+////            )
+////            cursor?.use {
+////                if (it.moveToFirst ()) {
+////                    result = it.getString (it.getColumnIndexOrThrow (column [0]))
+////                }
+////            }
+////        }
+////    } else {
+////        result = uri.path
+////        val cut = result.lastIndexOf ('/')
+////        if (cut != -1) {
+////            result = result.substring (cut + 1)
+////        }
+////    }
+////    return result
+//    return "4: idk"
+//}
