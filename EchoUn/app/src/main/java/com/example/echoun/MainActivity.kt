@@ -1,6 +1,9 @@
 package com.example.echoun
 
+import android.Manifest
+import android.app.Activity
 import android.os.Bundle
+import android.os.Environment
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -28,12 +31,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import com.example.echoun.ui.theme.EchoUnTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
 
 private var theFilePathText = mutableStateOf(" none ")
 private var thePlayButtonText = mutableStateOf("Start Playing")
@@ -116,10 +124,73 @@ fun TextList() {
     }
 }
 
-
+//@Composable
 private fun openFilePicker() {
     theFilePathText.value = "Bushed!"
     asText.add("Pushed!!!")
+
+    //val activity = context as Activity
+
+    // Requesting Permission to access External Storage
+    // Requesting Permission to access External Storage
+    //ActivityCompat.requestPermissions(
+    //    activity, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 23
+    //)
+
+    // getExternalStoragePublicDirectory() represents root of external storage, we are using DOWNLOADS
+    // We can use following directories: MUSIC, PODCASTS, ALARMS, RINGTONES, NOTIFICATIONS, PICTURES, MOVIES
+    val folder: File =
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
+    asText.add("folder.name")
+    asText.add(folder.name)
+
+    // Storing the data in file with name as geeksData.txt
+    val file1 = File(folder, "geeksData.txt")
+    //writeTextData(file, message.value, context)
+    //message.value = ""
+    // displaying a toast message
+    //Toast.makeText(context, "Data saved publicly..", Toast.LENGTH_SHORT).show()
+
+    /*
+    var data = "It was here!!!"
+    var fileOutputStream: FileOutputStream? = null
+    try {
+        fileOutputStream = FileOutputStream(file1)
+        fileOutputStream.write(data.toByteArray())
+    } catch (e: Exception) {
+        e.printStackTrace()
+    } finally {
+        if (fileOutputStream != null) {
+            try {
+                fileOutputStream.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+    }
+     */
+
+
+
+
+    // Accessing the saved data from the downloads folder
+    val folder2 =
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
+    // geeksData represent the file data that is saved publicly
+    val file2 = File(folder2, "geeksData.txt")
+    val data2: String = getdata(file2)
+    if (data2 != null && data2 != "") {
+        asText.add(data2)
+        //txtMsg.value = data
+    } else {
+        asText.add("No Data Found")
+        //txtMsg.value = "No Data Found"
+    }
+
+
+
 }
 
 @Preview(showBackground = true,
@@ -163,4 +234,36 @@ private fun speakPhrases() {
         asText.add("# Spoke $itemsPlayed phrases")
         asText.add("# Stopped playing")
     }
+}
+
+
+private fun selFile() {
+
+
+}
+
+private fun getdata(myfile: File): String {
+    // on below line creating a variable for file input stream.
+    var fileInputStream: FileInputStream? = null
+    // on below line reading data from file and returning it.
+    try {
+        fileInputStream = FileInputStream(myfile)
+        var i = -1
+        val buffer = StringBuffer()
+        while (fileInputStream.read().also { i = it } != -1) {
+            buffer.append(i.toChar())
+        }
+        return buffer.toString()
+    } catch (e: java.lang.Exception) {
+        e.printStackTrace()
+    } finally {
+        if (fileInputStream != null) {
+            try {
+                fileInputStream.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+    }
+    return ""
 }
