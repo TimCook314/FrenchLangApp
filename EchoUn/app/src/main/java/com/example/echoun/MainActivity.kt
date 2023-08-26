@@ -161,7 +161,6 @@ class MainActivity : ComponentActivity() {
                 for (voice in allVoices) {
                     val txt = voice.name
                     if (txt.startsWith("en-us") && txt.endsWith("local")) {
-                        //asText.add("A voice: " + voice.name)
                         enVoiceNames.add(txt)
                     }
                 }
@@ -190,12 +189,11 @@ class MainActivity : ComponentActivity() {
                 tts1.language = Locale.FRENCH
                 // Get a list of available voices in FRENCH
                 val allVoices = tts1.voices
-                var frVoiceNames = mutableListOf<String>()
+                val frVoiceNames = mutableListOf<String>()
                 for (voice in allVoices) {
                     val txt = voice.name
                     //if ((txt.startsWith("fr-fr") || txt.startsWith("fr-ca")) && txt.endsWith("local")) {
                     if (txt.startsWith("fr-fr") && txt.endsWith("local")) {
-                        //asText.add("A voice: " + voice.name)
                         frVoiceNames.add(txt)
                     }
                 }
@@ -212,107 +210,16 @@ class MainActivity : ComponentActivity() {
                         emptySet()
                     )
                     tts1.setVoice(aVoice)
+                    //ttsE.setSpeechRate(1.5f) // Faster speech
+                    //ttsE.setPitch(0.8f) // Lower pitch
                 }
             }
         })
 
 
-        asText.add("setupVoices: 4")
-        //asText.add("E Voice:" + ttsE.voice.name)
-
-//        // Get a list of available voices from the TTS engine
-//        val availableVoices = ttsE.voices
-//        // Iterate through the available voices and find a male voice
-//        val maleVoice = availableVoices.find { voice ->
-//            // Check for attributes that indicate a male voice (e.g., gender, locale)
-//            // You can customize this check based on the attributes provided by the TTS engine.
-//            voice.gender == TextToSpeech.VOICE_MALE &&
-//                    voice.locale.language == "en" // Filter for English male voice
-//        }
-//        // Set the selected male voice
-//        if (maleVoice != null) {
-//            ttsE.voice = maleVoice
-//        }
-
-//        val english = Locale("en", "US")
-//        val eVoice = Voice("en-US-language", english, Voice.QUALITY_VERY_HIGH, Voice.LATENCY_NORMAL, false, emptySet())
-//        asText.add("E Voice:" + eVoice.name)
-//        ttsE.setVoice(eVoice)
-
-        //ttsE.setSpeechRate(1.5f) // Faster speech
-        //ttsE.setPitch(0.8f) // Lower pitch
-
-
-        asText.add("setupVoices: 5")
-        //val tts1: TextToSpeech
-//        val tts1 = TextToSpeech(this, TextToSpeech.OnInitListener() {
-//            if (it == TextToSpeech.SUCCESS) { /*tts1.language = Locale.FRENCH */
-//            }
-//        })
-//        tts1.setLanguage(Locale.FRENCH)
-//        ttsL.add(tts1)
-//
-//        asText.add("setupVoices: 6")
-//        tts2 = TextToSpeech(this, TextToSpeech.OnInitListener {
-//            if (it == TextToSpeech.SUCCESS) { tts2.language = Locale.FRENCH }
-//        })
-//        val french2 = Locale("fr", "FR")
-//        val voice2 = Voice("fr-fr-x-2-local", french2, Voice.QUALITY_VERY_HIGH,Voice.LATENCY_NORMAL, false, emptySet())
-//        asText.add("2 Voice:" + voice2.name)
-//        tts2.setVoice(voice2)
-
         tts2 = tts1
-
-        asText.add("setupVoices: 7")
     }
 }
-
-//
-//        //tts1.setLanguage( Locale.FRENCH )
-//        //Set<Voice> voices = tts1.getVoices();
-//        //val voices1 = tts1.getVoices()
-//        //val voiceList: List<MutableSet<Voice>> = listOf(voices1)
-//        //volume.value = voiceList.size.toDouble()
-//
-//        //val voices1 = tts1.getVoices()
-//        //val french1Voice = voices1.first { it.locale.language == "fr" && it.isMale}
-//        //tts1.setVoice(french1Voice)
-//        val french1 = Locale("fr", "FR")
-//        val voice1 = Voice("fr-fr-x-4-local", french1, Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, emptySet())
-//        tts1.setVoice(voice1)
-//
-//        tts2 = TextToSpeech(this, TextToSpeech.OnInitListener {
-//            if (it == TextToSpeech.SUCCESS) { tts2.language = Locale.FRENCH }
-//        })
-//        val french2 = Locale("fr", "FR")
-//        val voice2 = Voice("fr-fr-x-2-local", french2, Voice.QUALITY_VERY_HIGH,Voice.LATENCY_NORMAL, false, emptySet())
-//        tts2.setVoice(voice2)
-//
-//        tts3 = TextToSpeech(this, TextToSpeech.OnInitListener {
-//            if (it == TextToSpeech.SUCCESS) {
-//                tts3.language = Locale.CANADA_FRENCH
-//            }
-//        })
-//        val french3 = Locale("fr", "FR")
-//        val voice3 = Voice("fr-fr-x-3-local", french3, Voice.QUALITY_HIGH,Voice.LATENCY_NORMAL, false, emptySet())
-//        tts3.setVoice(voice3)
-////        val voice3 = tts3.getVoices().first { it.name == "French Male" }
-////        tts.setVoice(voice3)
-//
-//
-//        //val voices3 = tts3.getVoices()
-//        //val french3Voice = voices3.first { it.locale.language == "fr" && it.isMale }
-//        //tts3.setVoice(french3Voice)
-////
-//        tts4 = TextToSpeech(this, TextToSpeech.OnInitListener {
-//            if (it == TextToSpeech.SUCCESS) {
-//                tts4.language = Locale.CANADA_FRENCH
-//            }
-//        })
-//        val french4 = Locale("fr", "CA")
-//        val voice4 = Voice("fr-ca-x-4-local", french4, Voice.QUALITY_HIGH, Voice.LATENCY_NORMAL, false, emptySet())
-//        tts4.setVoice(voice4)
-
 
 @Composable
 fun TextList() {
@@ -327,69 +234,6 @@ fun TextList() {
     }
 }
 
-////@Composable
-//private fun openFilePicker() {
-//    //theFilePathText.value = "Bushed!"
-//    asText.add("Pushed!!!")
-//
-//    //val activity = context as Activity
-//
-//    // Requesting Permission to access External Storage
-//    // Requesting Permission to access External Storage
-//    //ActivityCompat.requestPermissions(
-//    //    activity, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 23
-//    //)
-//
-//    // getExternalStoragePublicDirectory() represents root of external storage, we are using DOWNLOADS
-//    // We can use following directories: MUSIC, PODCASTS, ALARMS, RINGTONES, NOTIFICATIONS, PICTURES, MOVIES
-//    val folder: File =
-//        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-//
-//    asText.add("folder.name")
-//    asText.add(folder.name)
-//
-//    // Storing the data in file with name as geeksData.txt
-//    val file1 = File(folder, "geeksData.txt")
-//    //writeTextData(file, message.value, context)
-//    //message.value = ""
-//    // displaying a toast message
-//    //Toast.makeText(context, "Data saved publicly..", Toast.LENGTH_SHORT).show()
-//
-//    /*
-//    var data = "It was here!!!"
-//    var fileOutputStream: FileOutputStream? = null
-//    try {
-//        fileOutputStream = FileOutputStream(file1)
-//        fileOutputStream.write(data.toByteArray())
-//    } catch (e: Exception) {
-//        e.printStackTrace()
-//    } finally {
-//        if (fileOutputStream != null) {
-//            try {
-//                fileOutputStream.close()
-//            } catch (e: IOException) {
-//                e.printStackTrace()
-//            }
-//        }
-//    }
-//     */
-//
-//
-//    // Accessing the saved data from the downloads folder
-//    val folder2 =
-//        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-//
-//    // geeksData represent the file data that is saved publicly
-//    val file2 = File(folder2, "geeksData.txt")
-//    val data2: String = getdata(file2)
-//    if (data2 != null && data2 != "") {
-//        asText.add(data2)
-//        //txtMsg.value = data
-//    } else {
-//        asText.add("No Data Found")
-//        //txtMsg.value = "No Data Found"
-//    }
-//}
 
 //@Preview(showBackground = true,
 //    showSystemUi = true)
@@ -431,13 +275,13 @@ private fun speakPhrases() {
             var startTime = SystemClock.uptimeMillis()
             tts2.speak(aVocab.french, TextToSpeech.QUEUE_FLUSH, null, null)
             var elapsedTime = SystemClock.uptimeMillis() - startTime
-            delay(Math.min(Math.max(3000, (2.2*elapsedTime).toLong() ), 20000) )
+            delay(Math.min(Math.max(3000, (2.5*elapsedTime).toLong() ), 20000) )
 
             startTime = SystemClock.uptimeMillis()
             ttsE.speak(aVocab.english, TextToSpeech.QUEUE_FLUSH, null, null)
             elapsedTime = SystemClock.uptimeMillis() - startTime
             itemsPlayed += 1
-            delay(Math.min(Math.max(3000, (1.8*elapsedTime).toLong() ), 20000) )
+            delay(Math.min(Math.max(3000, (2.5*elapsedTime).toLong() ), 20000) )
         }
         isPlaying = false
         thePlayButtonText.value = "Start Playing"
@@ -489,28 +333,7 @@ fun readUri(context: Context, uri: Uri?): ByteArray? {
     fileStream.read(data)
     return data
 }
-//
-//public fun idk(uri: Uri) {
-////Uri uri = data.getData();
-//
-//    val bob = getResourceAsStream(uri).bufferedReader().readLines()
-//    try {
-//        InputStream in = getContentResolver().openInputStream(uri);
-//
-//
-//        BufferedReader r = new BufferedReader(new InputStreamReader ( in));
-//        StringBuilder total = new StringBuilder();
-//        for (String line; (line = r.readLine()) != null; ) {
-//            total.append(line).append('\n');
-//        }
-//
-//        String content = total . toString ();
-//
-//
-//    } catch (Exception e) {
-//
-//    }
-//}
+
 
 private fun getUriName(context: Context, uri: Uri): String {
     var result = "none"
@@ -585,7 +408,7 @@ private fun readVocalData(context: Context, uri: Uri, name: String) {
         var line = bufferedReader.readLine()
         while (line != null) {
             linesRead++
-            var parts = line.split(";")
+            val parts = line.split(";")
             // Check if the line starts with "#"
             if (line.startsWith("#")) {
                 // Increment the count variable
@@ -642,63 +465,3 @@ class Vocab {
     var frequency: Int = 1
 }
 
-
-//    val txt = uri.toString()
-//    if (txt.startsWith("file:")) {
-//        return "1: " + File (uri.path).name
-//    } else if (txt.startsWith("content:")) {
-//        var result: String = "null"
-//        if (uri.scheme == "content") {
-//            val cursor = context.contentResolver.query (uri, null, null, null, null)
-//            cursor?.use {
-//                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-//                result = "2: " + cursor.getString(nameIndex)
-////                if (it.moveToFirst ()) {
-////                    result = it.getString (it.getColumnIndex (OpenableColumns.DISPLAY_NAME))
-////                }
-//            }
-//        }
-//        if (result == null) {
-//            //result = uri.path
-//            val idk = uri.path
-//            if (idk == null) {
-//
-//            } else {
-//                result = idk
-//                val cut = result.lastIndexOf ('/')
-//                if (cut != -1) {
-//                    result = result.substring (cut + 1)
-//                }
-//
-//            }
-//        }
-//        return "3: " + result
-//    }
-////    var result: String? = null
-////    if (DocumentsContract.isDocumentUri (this, uri)) {
-////        val documentId = DocumentsContract.getDocumentId (uri)
-////        val splits = documentId.split (":")
-////        if (splits.size == 2) {
-////            val id = splits [1]
-////            val column = arrayOf (MediaStore.Images.Media.DATA)
-////            val sel = MediaStore.Images.Media._ID + "=?"
-////            val cursor = contentResolver.query (
-////                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-////                column, sel, arrayOf (id), null
-////            )
-////            cursor?.use {
-////                if (it.moveToFirst ()) {
-////                    result = it.getString (it.getColumnIndexOrThrow (column [0]))
-////                }
-////            }
-////        }
-////    } else {
-////        result = uri.path
-////        val cut = result.lastIndexOf ('/')
-////        if (cut != -1) {
-////            result = result.substring (cut + 1)
-////        }
-////    }
-////    return result
-//    return "4: idk"
-//}
