@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.SystemClock
 import android.provider.OpenableColumns
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -47,7 +48,7 @@ import java.util.Locale
 
 private var theFilePathText = mutableStateOf("none")
 private var thePlayButtonText = mutableStateOf("Start Playing")
-private var asText = mutableStateListOf<String>("App started")
+private var asText = mutableStateListOf<String>("App started Version: 0.1b")
 private var itemsPlayed = 0
 private var isPlaying = false
 private var reqStop = false
@@ -55,7 +56,6 @@ private var reqStop = false
 private var fileUri = mutableStateOf<Uri?>(null)
 
 private var vocabIsLoaded = false
-private var vocabList = mutableListOf<Vocab>()
 
 private lateinit var ttsE: TextToSpeech
 private var ttsL = mutableListOf<TextToSpeech>()
@@ -64,6 +64,31 @@ private lateinit var tts2: TextToSpeech
 //var imageUri by remember {
 //    mutableStateOf<Uri?>(null)
 //}
+
+//class MyUtteranceProgressListener : UtteranceProgressListener() {
+//
+//    private var startTime: Long = 0
+//
+//    override fun onStart(utteranceId: String) {
+//        startTime = System.currentTimeMillis()
+//        asText.add("A")
+//    }
+//
+//    override fun onDone(utteranceId: String) {
+//        val endTime = System.currentTimeMillis()
+//        val speakingTime = endTime - startTime
+//        asText.add("B")
+//        //Log.d("MyUtteranceProgressListener", "Speaking time: $speakingTime ms")
+//    }
+//
+//    override fun onError(utteranceId: String) {
+//        //Log.e("MyUtteranceProgressListener", "Error speaking utterance")
+//    }
+//}
+
+private fun reportIt(txt: String) {
+    asText.add(txt)
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,11 +115,11 @@ class MainActivity : ComponentActivity() {
             onResult = { uri ->
                 fileUri.value = uri
                 if (uri == null) {
-                    //asText.add(uri.path())
+                    //reportIt(uri.path())
                 } else {
-                    asText.add("Got new file, name is:")
+                    reportIt("Got new file, name is:")
                     val itis = getUriName(this, uri)
-                    asText.add(itis)
+                    reportIt(itis)
                     theFilePathText.value = itis
                     readVocalData(this, uri, itis)
                 }
@@ -151,7 +176,7 @@ class MainActivity : ComponentActivity() {
 
 
     private fun setupVoices() {
-        asText.add("setupVoices: 1")
+        reportIt("setupVoices: 1")
         ttsE = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
                 ttsE.language = Locale.ENGLISH
@@ -167,7 +192,7 @@ class MainActivity : ComponentActivity() {
                 if (enVoiceNames.isNotEmpty()) {
                     val english = Locale("en", "US")
                     val txt = enVoiceNames.random()
-                    asText.add("Using English voice: $txt")
+                    reportIt("Using English voice: $txt")
                     val eVoice = Voice(
                         txt,
                         english,
@@ -200,7 +225,7 @@ class MainActivity : ComponentActivity() {
                 if (frVoiceNames.count() > 0) {
                     val french = Locale("fr", "FR")
                     val txt = frVoiceNames.random()
-                    asText.add("Using French voice: " + txt)
+                    reportIt("Using French voice: " + txt)
                     val aVoice = Voice(
                         txt,
                         french,
@@ -210,7 +235,9 @@ class MainActivity : ComponentActivity() {
                         emptySet()
                     )
                     tts1.setVoice(aVoice)
-                    //ttsE.setSpeechRate(1.5f) // Faster speech
+                    //val listener = MyUtteranceProgressListener()
+                    //tts1.setOnUtteranceProgressListener(MyUtteranceProgressListener())
+                    tts1.setSpeechRate(vocabList.frenchSpeed) // Faster speech
                     //ttsE.setPitch(0.8f) // Lower pitch
                 }
             }
@@ -250,7 +277,7 @@ private fun toggleSpeaking() {
         // Set flag to stop playing
         reqStop = true
         thePlayButtonText.value = "Stopping"
-        asText.add("# Stopping play")
+        reportIt("# Stopping play")
     } else {
         reqStop = false
         isPlaying = true
@@ -261,78 +288,93 @@ private fun toggleSpeaking() {
 private fun speakPhrases() {
     CoroutineScope(Dispatchers.IO).launch {
         //var currentPhrase: String
-        asText.add("# Starting to play.")
+        reportIt("# Starting to play.")
         thePlayButtonText.value = "Stop Playing"
+        //val selectedSeries = vocabList.toMutableList()
+        //tts2.setOnUtteranceProgressListener(MyUtteranceProgressListener())
 
         itemsPlayed = 0
         while (reqStop == false) {
-            val aVocab = vocabList.random()
-            val phrase = aVocab.french + " --> " + aVocab.english
-            asText.add(phrase)
-            //ttsL.random().speak(aVocab.french, TextToSpeech.QUEUE_FLUSH, null, null)
 
-            // Start the timer
-            var startTime = SystemClock.uptimeMillis()
-            tts2.speak(aVocab.french, TextToSpeech.QUEUE_FLUSH, null, null)
-            var elapsedTime = SystemClock.uptimeMillis() - startTime
-            delay(Math.min(Math.max(3000, (2.5*elapsedTime).toLong() ), 20000) )
+            val aPhrasePair =  getThePhrase()
+            val phrase = aPhrasePair.fTxt + " --> " + aPhrasePair.eTxt
+            reportIt(phrase)
 
-            startTime = SystemClock.uptimeMillis()
-            ttsE.speak(aVocab.english, TextToSpeech.QUEUE_FLUSH, null, null)
-            elapsedTime = SystemClock.uptimeMillis() - startTime
-            itemsPlayed += 1
-            delay(Math.min(Math.max(3000, (2.5*elapsedTime).toLong() ), 20000) )
+            val audioPattern = vocabList.audioPattern
+            for (ch in audioPattern.iterator()) {
+                when (ch) {
+                    'f' -> {
+                        // Start the timer
+                        tts2.speak(aPhrasePair.fTxt, TextToSpeech.QUEUE_FLUSH, null, null)
+                        val startTime = SystemClock.uptimeMillis()
+                        do {
+                            delay(100)
+                        } while (tts2.isSpeaking())
+                        val elapsedTimeF = SystemClock.uptimeMillis() - startTime
+                        delay(Math.min(Math.max(3000, (vocabList.frenchPauseFactor*elapsedTimeF).toLong() ), 20000) )
+                    }
+                    'e' -> {
+                        ttsE.speak(aPhrasePair.eTxt, TextToSpeech.QUEUE_FLUSH, null, null)
+                        val startTime = SystemClock.uptimeMillis()
+                        do {
+                            delay(100)
+                        } while (ttsE.isSpeaking())
+                        val elapsedTimeE = SystemClock.uptimeMillis() - startTime
+                        itemsPlayed += 1
+                        delay(Math.min(Math.max(2000, (1.0*elapsedTimeE).toLong() ), 20000) )
+                    }
+                    else -> {
+                        //reportIt("*** Error parsing line $line")
+                        //code
+                    }
+                }
+            }
         }
         isPlaying = false
         thePlayButtonText.value = "Start Playing"
-        asText.add("# Spoke $itemsPlayed phrases")
-        asText.add("# Stopped playing")
+        reportIt("# Spoke $itemsPlayed phrases")
+        reportIt("# Stopped playing")
     }
 }
 
 
-private fun selFile() {
+//private fun getdata(myfile: File): String {
+//    // on below line creating a variable for file input stream.
+//    var fileInputStream: FileInputStream? = null
+//    // on below line reading data from file and returning it.
+//    try {
+//        fileInputStream = FileInputStream(myfile)
+//        var i: Int
+//        val buffer = StringBuffer()
+//        while (fileInputStream.read().also { i = it } != -1) {
+//            buffer.append(i.toChar())
+//        }
+//        return buffer.toString()
+//    } catch (e: java.lang.Exception) {
+//        e.printStackTrace()
+//    } finally {
+//        if (fileInputStream != null) {
+//            try {
+//                fileInputStream.close()
+//            } catch (e: IOException) {
+//                e.printStackTrace()
+//            }
+//        }
+//    }
+//    return ""
+//}
 
 
-}
-
-private fun getdata(myfile: File): String {
-    // on below line creating a variable for file input stream.
-    var fileInputStream: FileInputStream? = null
-    // on below line reading data from file and returning it.
-    try {
-        fileInputStream = FileInputStream(myfile)
-        var i: Int
-        val buffer = StringBuffer()
-        while (fileInputStream.read().also { i = it } != -1) {
-            buffer.append(i.toChar())
-        }
-        return buffer.toString()
-    } catch (e: java.lang.Exception) {
-        e.printStackTrace()
-    } finally {
-        if (fileInputStream != null) {
-            try {
-                fileInputStream.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-        }
-    }
-    return ""
-}
-
-
-@Throws(IOException::class)
-fun readUri(context: Context, uri: Uri?): ByteArray? {
-    val pdf = context.contentResolver.openFileDescriptor(uri!!, "r")!!
-    assert(pdf.statSize <= Int.MAX_VALUE)
-    val data = ByteArray(pdf.statSize.toInt())
-    val fd = pdf.fileDescriptor
-    val fileStream = FileInputStream(fd)
-    fileStream.read(data)
-    return data
-}
+//@Throws(IOException::class)
+//fun readUri(context: Context, uri: Uri?): ByteArray? {
+//    val pdf = context.contentResolver.openFileDescriptor(uri!!, "r")!!
+//    assert(pdf.statSize <= Int.MAX_VALUE)
+//    val data = ByteArray(pdf.statSize.toInt())
+//    val fd = pdf.fileDescriptor
+//    val fileStream = FileInputStream(fd)
+//    fileStream.read(data)
+//    return data
+//}
 
 
 private fun getUriName(context: Context, uri: Uri): String {
@@ -342,7 +384,7 @@ private fun getUriName(context: Context, uri: Uri): String {
         cursor?.use {
             if (it.moveToFirst()) {
                 val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                asText.add("nameIndex$nameIndex")
+                reportIt("nameIndex$nameIndex")
                 result = cursor.getString(nameIndex)
             }
         }
@@ -374,7 +416,7 @@ private fun getUriName(context: Context, uri: Uri): String {
 
         // Close the BufferedReader
         bufferedReader.close()
-        asText.add("lines with # is $count")
+        reportIt("lines with # is $count")
 
         // Display the count in a Text composable or do something else with it
         //    Text(text = "The number of lines that start with # is $count")
@@ -384,8 +426,6 @@ private fun getUriName(context: Context, uri: Uri): String {
         //    Text(text = "An error occurred: ${e.message}")
         //}
     }
-
-
     return result
 }
 
@@ -393,10 +433,8 @@ private fun readVocalData(context: Context, uri: Uri, name: String) {
     if (name == "none") {
         return
     }
-    asText.add("Reading file.")
+    reportIt("Reading file.")
     // Initialize a count variable
-    var linesRead = 0
-    var count = 0
     //val context = LocalContext.current
     // Use a try-catch block to handle any exceptions
     try {
@@ -404,64 +442,210 @@ private fun readVocalData(context: Context, uri: Uri, name: String) {
         val bufferedReader =
             BufferedReader(InputStreamReader(context.contentResolver.openInputStream(uri)))
 
-        // Use a loop to read each line until the end of the file
-        var line = bufferedReader.readLine()
-        while (line != null) {
-            linesRead++
-            val parts = line.split(";")
-            // Check if the line starts with "#"
-            if (line.startsWith("#")) {
-                // Increment the count variable
-                count++
-            } else if (line.startsWith("@")) {
-                //Read data
-            } else if ((parts.size >= 3) && parts[0].lowercase().startsWith("phrase")) {
-                //Parse the phrase
-                val mine = Vocab()
-                mine.french = parts[1]
-                mine.english = parts[2]
-                mine.group = 1
-                mine.frequency = 1
-//                if (parts.size >= 4) {
-//                    mine.group = parts[3].toInt()
-//                }
-//                if (parts.size >= 5) {
-//                    mine.frequency = parts[4].toInt()
-//                }
-                vocabIsLoaded = true
-                vocabList.add(mine)
-            }
-            // Read the next line
-            line = bufferedReader.readLine()
-        }
+        val linesRead = readIt(bufferedReader)
         // Close the BufferedReader
         bufferedReader.close()
-        asText.add("  Lines read is $linesRead")
-        asText.add("  Lines with # is $count")
+        reportIt("  Lines read is $linesRead")
 
         //var mActivity: MainActivity
         //mActivity.setupVoices()
         //(activity as MainActivity).setupVoices()
 
     } catch (e: Exception) {
-        asText.add("*** Error reading file at about line $linesRead")
+        reportIt("*** Error accessing file.")
     }
 }
 
 
-class VoicesOptions {
-    var speed: Double = 1.0
-    var pauseFactor: Double = 1.0
-    var voice1: String = ""
-    var voice2: String = ""
+//private fun idk(tts: TextToSpeech, uri: Uri, name: String) {
+//    //wait for start
+//    // Start the timer
+//    var startTime = SystemClock.uptimeMillis()
+//    while (tts.isSpeaking()) {
+//        delay(100)
+//    }
+//    delay(Math.min(Math.max(3000, (2.5*elapsedTime).toLong() ), 20000) )
+//    if (x > 0) {
+//        started
+//    }
+//
+//}
+
+
+// Paste Here --------------------------------------------------------
+
+
+//Classes -----
+class Noun {
+    var fGender: Char = 'm'
+    var fPrefix: String = ""
+    var fNoun: String = ""
+    var eNoun: String = ""
+    var freq: Int = 1
 }
 
-//This class is for the data structure
-class Vocab {
-    var lang: String = ""
-    var french: String = ""
-    var english: String = ""
-    var group: Int = 1
-    var frequency: Int = 1
+class Adjective {
+    var eAdj: String = ""
+    var relPos: String = ""
+    var fMas: String = ""
+    var fFem: String = ""
+    var fMasp: String = ""
+    var fFemp: String = ""
+    var freq: Int = 1
 }
 
+class Phrase {
+    var fPhrase: String = ""
+    var ePhrase: String = ""
+    var freq: Int = 1
+}
+
+class LangData {
+    var frenchSpeed: Float = 1.0f
+    var frenchPauseFactor: Double = 1.0
+    var phrasePatterns = mutableListOf<String>()
+    var audioPattern: String = "fef"
+    var frenchVoice: String = ""
+    var englishVoice: String = ""
+
+    val nouns = mutableListOf<Noun>()
+    val adjectives = mutableListOf<Adjective>()
+    val phrases = mutableListOf<Phrase>()
+
+}
+
+data class FAndEPair(val fTxt: String, val eTxt: String)
+
+
+//Data ------
+private var vocabList: LangData = LangData()
+
+//Code  ------------
+
+
+
+
+fun readIt(bufferedReader: BufferedReader): Int {
+    var linesRead = 0
+    try {
+        // Use a loop to read each line until the end of the file
+        var line: String?
+        do {
+            line = bufferedReader.readLine()
+            linesRead++
+            if (line == null) {
+                break
+            }
+            line = line.trim()
+            if (line.startsWith("#")) {
+                continue
+            } else if (line.startsWith("@")) {
+                //code it
+                val parts = line.split("=")
+                val part0 = parts[0].drop(1).trim()
+                when (part0) {
+                    "frenchSpeed" -> {
+                        vocabList.frenchSpeed = parts[1].toFloat()
+                    }
+                    "frenchPauseFactor" -> {
+                        vocabList.frenchPauseFactor = parts[1].toDouble()
+                    }
+                    "phrasePatterns" -> {
+                        vocabList.phrasePatterns.add( parts[1].trim() )
+                    }
+                    "audioPattern" -> {
+                        vocabList.audioPattern = parts[1].trim()
+                    }
+                    "frenchVoice" -> {
+                        vocabList.frenchVoice = parts[1].trim()
+                    }
+                    "englishVoice" -> {
+                        vocabList.englishVoice = parts[1].trim()
+                    }
+                    else -> {
+                        reportIt("*** Error parsing line $line")
+                        //code
+                    }
+                }
+            } else {
+                val parts = line.split(";")
+                val part0 = parts[0].lowercase().trim()
+                when (part0) {
+                    "noun" -> {
+                        val the = Noun()
+                        the.fGender = parts[1].trim()[0]
+                        the.fPrefix = parts[2].trim()
+                        the.fNoun = parts[3].trim()
+                        the.eNoun = parts[4].trim()
+                        if (parts.size >= (5 + 1)) {
+                            the.freq = parts[5].toInt()
+                        }
+                        vocabList.nouns.add(the)
+                    }
+
+                    "adjective" -> {
+                        val the = Adjective()
+                        the.eAdj = parts[1].trim()
+                        the.relPos = parts[2].trim()
+                        the.fMas = parts[3].trim()
+                        the.fFem = parts[4].trim()
+                        the.fMasp = parts[5].trim()
+                        the.fFemp = parts[6].trim()
+                        if (parts.size >= (7 + 1)) {
+                            the.freq = parts[7].toInt()
+                        }
+                        vocabList.adjectives.add(the)
+                    }
+
+                    "phrase" -> {
+                        val the = Phrase()
+                        the.fPhrase = parts[1].trim()
+                        the.ePhrase = parts[2].trim()
+                        if (parts.size >= (3 + 1)) {
+                            the.freq = parts[3].toInt()
+                        }
+                        vocabList.phrases.add(the)
+                    }
+
+                    else -> {
+                        //code
+                    }
+                }
+            }
+        } while (true) // (line != null)
+    } catch (e: Exception) {
+        reportIt("*** Error reading file at about line $linesRead")
+    }
+    return linesRead
+}
+
+private fun getThePhrase(): FAndEPair {
+    var fText1 = "Erreur!"
+    var eText1 = "Error!"
+    //Decide what to do next
+    val pattern = vocabList.phrasePatterns.random()
+    when (pattern) {
+        "phrase" -> {
+            val phrase = vocabList.phrases.random()
+            fText1 = phrase.fPhrase
+            eText1 = phrase.ePhrase
+
+        }
+        "noun" -> {
+            val noun = vocabList.nouns.random()
+            fText1 = noun.fNoun
+            eText1 = noun.eNoun
+
+        }
+        "the noun" -> {
+            val noun = vocabList.nouns.random()
+            fText1 = if (noun.fPrefix.endsWith("'")) {
+                noun.fPrefix + noun.fNoun
+            } else {
+                noun.fPrefix + " " + noun.fNoun
+            }
+            eText1 = noun.eNoun
+        }
+    }
+    return FAndEPair(fText1, eText1)
+}
