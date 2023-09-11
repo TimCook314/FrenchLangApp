@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.os.SystemClock
 import android.provider.OpenableColumns
 import android.speech.tts.TextToSpeech
-import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -40,25 +39,23 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
 import java.io.InputStreamReader
 import java.util.Locale
 
 
 private var theFilePathText = mutableStateOf("none")
 private var thePlayButtonText = mutableStateOf("Start Playing")
-private var asText = mutableStateListOf<String>("App started Version: 0.1b")
+private var asText = mutableStateListOf("App started Version: 0.1b")
 private var itemsPlayed = 0
 private var isPlaying = false
 private var reqStop = false
 
 private var fileUri = mutableStateOf<Uri?>(null)
 
-private var vocabIsLoaded = false
+//private var vocabIsLoaded = false
 
 private lateinit var ttsE: TextToSpeech
-private var ttsL = mutableListOf<TextToSpeech>()
+//private var ttsL = mutableListOf<TextToSpeech>()
 private lateinit var tts2: TextToSpeech
 
 //var imageUri by remember {
@@ -177,7 +174,7 @@ class MainActivity : ComponentActivity() {
 
     private fun setupVoices() {
         reportIt("setupVoices: 1")
-        ttsE = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
+        ttsE = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 ttsE.language = Locale.ENGLISH
                 // Get a list of available voices in English
@@ -204,12 +201,12 @@ class MainActivity : ComponentActivity() {
                     ttsE.voice = eVoice
                 }
             }
-        })
+        }
         var tts1 = TextToSpeech(this) {
             //if (it == TextToSpeech.SUCCESS) { /*tts1.language = Locale.FRENCH */
             //}
         }
-        tts1 = TextToSpeech(this, TextToSpeech.OnInitListener { status ->
+        tts1 = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 tts1.language = Locale.FRENCH
                 // Get a list of available voices in FRENCH
@@ -222,10 +219,10 @@ class MainActivity : ComponentActivity() {
                         frVoiceNames.add(txt)
                     }
                 }
-                if (frVoiceNames.count() > 0) {
+                if (frVoiceNames.isNotEmpty()) {
                     val french = Locale("fr", "FR")
                     val txt = frVoiceNames.random()
-                    reportIt("Using French voice: " + txt)
+                    reportIt("Using French voice: $txt")
                     val aVoice = Voice(
                         txt,
                         french,
@@ -234,14 +231,14 @@ class MainActivity : ComponentActivity() {
                         false,
                         emptySet()
                     )
-                    tts1.setVoice(aVoice)
+                    tts1.voice = aVoice
                     //val listener = MyUtteranceProgressListener()
                     //tts1.setOnUtteranceProgressListener(MyUtteranceProgressListener())
                     tts1.setSpeechRate(vocabList.frenchSpeed) // Faster speech
                     //ttsE.setPitch(0.8f) // Lower pitch
                 }
             }
-        })
+        }
 
 
         tts2 = tts1
@@ -294,7 +291,7 @@ private fun speakPhrases() {
         //tts2.setOnUtteranceProgressListener(MyUtteranceProgressListener())
 
         itemsPlayed = 0
-        while (reqStop == false) {
+        while (!reqStop) {
 
             val aPhrasePair =  getThePhrase()
             val phrase = aPhrasePair.fTxt + " --> " + aPhrasePair.eTxt
@@ -309,7 +306,7 @@ private fun speakPhrases() {
                         val startTime = SystemClock.uptimeMillis()
                         do {
                             delay(100)
-                        } while (tts2.isSpeaking())
+                        } while (tts2.isSpeaking)
                         val elapsedTimeF = SystemClock.uptimeMillis() - startTime
                         delay(Math.min(Math.max(3000, (vocabList.frenchPauseFactor*elapsedTimeF).toLong() ), 20000) )
                     }
@@ -318,7 +315,7 @@ private fun speakPhrases() {
                         val startTime = SystemClock.uptimeMillis()
                         do {
                             delay(100)
-                        } while (ttsE.isSpeaking())
+                        } while (ttsE.isSpeaking)
                         val elapsedTimeE = SystemClock.uptimeMillis() - startTime
                         itemsPlayed += 1
                         delay(Math.min(Math.max(2000, (1.0*elapsedTimeE).toLong() ), 20000) )
@@ -389,7 +386,8 @@ private fun getUriName(context: Context, uri: Uri): String {
             }
         }
     } else if (uri.toString().startsWith("file:")) {
-        result = File(uri.path).name
+        val ok: String = uri.path!!
+        result = File(ok).name
     }
 
     if (result != "none") {
@@ -487,10 +485,10 @@ class Noun {
 class Adjective {
     var eAdj: String = ""
     var relPos: String = ""
-    var fMas: String = ""
-    var fFem: String = ""
-    var fMasp: String = ""
-    var fFemp: String = ""
+    var masculine: String = ""
+    var feminine: String = ""
+    var masculinePlural: String = ""
+    var femininePlural: String = ""
     var freq: Int = 1
 }
 
@@ -587,10 +585,10 @@ fun readIt(bufferedReader: BufferedReader): Int {
                         val the = Adjective()
                         the.eAdj = parts[1].trim()
                         the.relPos = parts[2].trim()
-                        the.fMas = parts[3].trim()
-                        the.fFem = parts[4].trim()
-                        the.fMasp = parts[5].trim()
-                        the.fFemp = parts[6].trim()
+                        the.masculine = parts[3].trim()
+                        the.feminine = parts[4].trim()
+                        the.masculinePlural = parts[5].trim()
+                        the.femininePlural = parts[6].trim()
                         if (parts.size >= (7 + 1)) {
                             the.freq = parts[7].toInt()
                         }
@@ -646,6 +644,19 @@ private fun getThePhrase(): FAndEPair {
             }
             eText1 = noun.eNoun
         }
+        "Je suis {adjective.Masculine or adjective.Feminine}" -> {
+            val adj = vocabList.adjectives.random()
+            // will return an `Int` between 0 and 10 (incl.)
+            val bob = (0..1).random()
+            val fAdj = if (bob == 0) {
+                adj.masculine
+            } else {
+                adj.feminine
+            }
+            fText1 = "Je suis $fAdj"
+            eText1 = "I am ${adj.eAdj}"
+        }
+
     }
     return FAndEPair(fText1, eText1)
 }
