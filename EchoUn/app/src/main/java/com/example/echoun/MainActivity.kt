@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,7 +47,7 @@ import java.util.Locale
 
 private var theFilePathText = mutableStateOf("none")
 private var thePlayButtonText = mutableStateOf("Start Playing")
-private var asText = mutableStateListOf("App started Version: 0.1b")
+private var asText = mutableStateListOf("App started Version: 9:28 9/11")
 private var itemsPlayed = 0
 private var isPlaying = false
 private var reqStop = false
@@ -247,8 +249,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TextList() {
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
+        state = listState,
         //contentPadding = PaddingValues(16.dp)
     ) {
         items(asText) { item ->
@@ -256,8 +261,27 @@ fun TextList() {
             Text(text = item)
         }
     }
-}
+    ScrollToBottom(
+        onClick = {
+            coroutineScope.launch {
+                // Animate scroll to the first item
+                listState.animateScrollToItem(index = asText.lastIndex)
+            }
+        }
+    )
+    //ScrollToBottom(
+    //    coroutineScope.launch {
+    //        // Animate scroll to the first item
+    //        listState.animateScrollToItem(index = asText.lastIndex)
+    //    }
+    //)
 
+}
+@Composable
+private fun ScrollToBottom(onClick: () -> Unit = {}) = Unit
+
+//@Composable
+//private fun ScrollToBottom()
 
 //@Preview(showBackground = true,
 //    showSystemUi = true)
@@ -642,7 +666,7 @@ private fun getThePhrase(): FAndEPair {
             } else {
                 noun.fPrefix + " " + noun.fNoun
             }
-            eText1 = noun.eNoun
+            eText1 = "the ${noun.eNoun}"
         }
         "Je suis {adjective.Masculine or adjective.Feminine}" -> {
             val adj = vocabList.adjectives.random()
@@ -653,10 +677,20 @@ private fun getThePhrase(): FAndEPair {
             } else {
                 adj.feminine
             }
-            fText1 = "Je suis $fAdj"
-            eText1 = "I am ${adj.eAdj}"
+            if ((0..3).random() >=3) {
+                //"je suis très grand"
+                val fMore = "très"
+                val eMore = "very"
+                fText1 = "Je suis $fMore $fAdj"
+                eText1 = "I am $eMore ${adj.eAdj}"
+            } else {
+                fText1 = "Je suis $fAdj"
+                eText1 = "I am ${adj.eAdj}"
+            }
         }
 
     }
     return FAndEPair(fText1, eText1)
 }
+
+
