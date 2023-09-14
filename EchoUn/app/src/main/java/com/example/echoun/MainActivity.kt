@@ -47,7 +47,7 @@ import java.util.Locale
 
 private var theFilePathText = mutableStateOf("none")
 private var thePlayButtonText = mutableStateOf("Start Playing")
-private var asText = mutableStateListOf("App started Version: 9:28 9/11")
+private var asText = mutableStateListOf("App started Version: 9:28 9/13")
 private var itemsPlayed = 0
 private var isPlaying = false
 private var reqStop = false
@@ -538,6 +538,33 @@ class LangData {
 
 data class FAndEPair(val fTxt: String, val eTxt: String)
 
+enum class Gender {
+    M, F,
+}
+enum class Quantity {
+    Single, Plural,
+}
+
+class AnAdjective {
+    var eText: String = ""
+    var fText: String = ""
+    var gender: Gender = Gender.M
+    var quantity: Quantity = Quantity.Single
+}
+
+//
+//enum class SubjectPerspective {
+//    Je_Nous, sdf, WEST, EAST
+//}
+//
+//class SubjectPart {
+//    var eTxt: String = ""
+//    var fTxt: String = ""
+//    var perspective: SubjectPerspective = SubjectPerspective.Je_Nous
+//    var quantity: SubjectQuantity = SubjectQuantity.single
+//    var gender: SubjectGender = SubjectGender.m
+//}
+
 
 //Data ------
 private var vocabList: LangData = LangData()
@@ -641,6 +668,7 @@ fun readIt(bufferedReader: BufferedReader): Int {
     return linesRead
 }
 
+@OptIn(ExperimentalStdlibApi::class)
 private fun getThePhrase(): FAndEPair {
     var fText1 = "Erreur!"
     var eText1 = "Error!"
@@ -669,28 +697,122 @@ private fun getThePhrase(): FAndEPair {
             eText1 = "the ${noun.eNoun}"
         }
         "Je suis {adjective.Masculine or adjective.Feminine}" -> {
-            val adj = vocabList.adjectives.random()
-            // will return an `Int` between 0 and 10 (incl.)
-            val bob = (0..1).random()
-            val fAdj = if (bob == 0) {
-                adj.masculine
-            } else {
-                adj.feminine
-            }
-            if ((0..3).random() >=3) {
-                //"je suis très grand"
-                val fMore = "très"
-                val eMore = "very"
-                fText1 = "Je suis $fMore $fAdj"
-                eText1 = "I am $eMore ${adj.eAdj}"
-            } else {
-                fText1 = "Je suis $fAdj"
-                eText1 = "I am ${adj.eAdj}"
+            val subjectGender: Gender = Gender.values().random()   //.entries.toTypedArray().random()
+            val subjectQuantity: Quantity = Quantity.Single
+            val adj2 = getAnAdjective( subjectGender, subjectQuantity )
+            fText1 = "Je suis ${adj2.fText}"
+            eText1 = "I am ${adj2.eText}"
+        }
+        "{pronoun} are {adjective}" -> {
+            val pronouns = listOf("Je", "Tu", "Il", "Elle", "Nous", "Vous", "Ils", "Elles")
+            val pronoun = pronouns.random()
+            when (pronoun) {
+                "Je" -> {
+                    val subjectGender: Gender = Gender.values().random()
+                    val subjectQuantity: Quantity = Quantity.Single
+                    val adj2 = getAnAdjective(subjectGender, subjectQuantity)
+                    fText1 = "Je suis ${adj2.fText}"
+                    eText1 = "I am ${adj2.eText}"
+                }
+
+                "Tu" -> {
+                    val subjectGender: Gender = Gender.values().random()
+                    val subjectQuantity: Quantity = Quantity.Single
+                    val adj2 = getAnAdjective(subjectGender, subjectQuantity)
+                    fText1 = "Tu es ${adj2.fText}"
+                    eText1 = "You are ${adj2.eText}"
+                }
+
+                "Il" -> {
+                    val subjectGender: Gender = Gender.M
+                    val subjectQuantity: Quantity = Quantity.Single
+                    val adj2 = getAnAdjective(subjectGender, subjectQuantity)
+                    fText1 = "Il est ${adj2.fText}"
+                    eText1 = "He is ${adj2.eText}"
+                }
+
+                "Elle" -> {
+                    val subjectGender: Gender = Gender.F
+                    val subjectQuantity: Quantity = Quantity.Single
+                    val adj2 = getAnAdjective(subjectGender, subjectQuantity)
+                    fText1 = "Elle est ${adj2.fText}"
+                    eText1 = "She is ${adj2.eText}"
+                }
+
+                "Nous" -> {
+                    val subjectGender: Gender = Gender.values().random()
+                    val subjectQuantity: Quantity = Quantity.Plural
+                    val adj2 = getAnAdjective(subjectGender, subjectQuantity)
+                    fText1 = "Nous sommes ${adj2.fText}"
+                    eText1 = "We are ${adj2.eText}"
+                }
+
+                "Vous" -> {
+                    val subjectGender: Gender = Gender.values().random()
+                    val subjectQuantity: Quantity = Quantity.values().random()
+                    val adj2 = getAnAdjective(subjectGender, subjectQuantity)
+                    fText1 = "Vous êtes ${adj2.fText}"
+                    eText1 = if (subjectQuantity == Quantity.Single) {
+                        "You are ${adj2.eText}"
+                    } else {
+                        "Y'all are ${adj2.eText}"
+                    }
+                }
+
+                "Ils" -> {
+                    val subjectGender: Gender = Gender.M
+                    val subjectQuantity: Quantity = Quantity.Plural
+                    val adj2 = getAnAdjective(subjectGender, subjectQuantity)
+                    fText1 = "Ils sont ${adj2.fText}"
+                    eText1 = "They are ${adj2.eText}"
+                }
+
+                "Elles" -> {
+                    val subjectGender: Gender = Gender.F
+                    val subjectQuantity: Quantity = Quantity.Plural
+                    val adj2 = getAnAdjective(subjectGender, subjectQuantity)
+                    fText1 = "Elles sont ${adj2.fText}"
+                    eText1 = "They are ${adj2.eText}"
+                }
             }
         }
-
     }
     return FAndEPair(fText1, eText1)
 }
 
+private fun getAnAdjective(gender: Gender, quantity: Quantity): AnAdjective {
+    val anAdjective = AnAdjective()
+    val adj = vocabList.adjectives.random()
+    anAdjective.gender = gender
+    anAdjective.quantity = quantity
+    if ( gender == Gender.M ) {
+        if ( quantity == Quantity.Single) {
+            anAdjective.eText = adj.eAdj
+            anAdjective.fText = adj.masculine
+        } else { //quantity == Quantity.plural
+            anAdjective.eText = adj.eAdj
+            anAdjective.fText = adj.masculinePlural
+        }
+    } else { //gender == Gender.f ) {
+        if ( quantity == Quantity.Single) {
+            anAdjective.eText = adj.eAdj
+            anAdjective.fText = adj.feminine
+        } else { //quantity == Quantity.plural
+            anAdjective.eText = adj.eAdj
+            anAdjective.fText = adj.femininePlural
+        }
+    }
+    if ((0..4).random() >=4) {
+        anAdjective.eText = "very " + anAdjective.eText
+        anAdjective.fText = "très " + anAdjective.fText
+    }
+    return anAdjective
+}
 
+//private fun getTheSubject(): SubjectPart {
+//    var subjectPart: SubjectPart = SubjectPart()
+//
+//    subjectPart.gender = SubjectGender.m
+//
+//    return subjectPart
+//}
