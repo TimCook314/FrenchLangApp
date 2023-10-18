@@ -1,0 +1,7 @@
+Put kotlinc on path
+export PATH="/workspaces/kotlinc/bin:$PATH"
+
+kotlinc hello.kt -include-runtime -d hello.jar
+
+java -jar hello.jar
+
