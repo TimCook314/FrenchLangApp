@@ -1,1 +1,232 @@
-#Put text here.
+# My French Vocab file
+#
+#Stuff
+@ frenchSpeed = 0.9
+@ frenchPauseFactor = 1.8
+@ audioPattern = fef
+
+#What to do
+#@ phrasePatterns = noun
+@ phrasePatterns = the noun
+@ phrasePatterns = phrase
+#@ phrasePatterns = Je suis {adjective.Masculine or adjective.Feminine}
+#@ phrasePatterns = {pronoun} are {adjective}
+#@ phrasePatterns = {pronoun} are {adjective}
+#@ phrasePatterns = {pronoun} are {adjective}
+
+#Type; Gender; Quan.;Article; Noun; English
+noun; m; s(p); l'; aéroport(s); airport
+noun; m; s(p); l'; appartement(s); apartment
+noun; f; s(p); l'; assiette(s); plate
+noun; m; s(p); l'; avion(s); airplane
+noun; m; s(p); le; bébé(s); baby
+noun; f; s(p); la; banque(s); bank
+noun; f; s; la; bienvenue; welcome
+noun; f; s(p); la; bière(s); beer
+noun; f; s(p); la; boulangerie(s); bakery
+noun; m; s&p; le; bus; bus
+noun; m; s; le; café; coffee
+noun; f; s(p); la; calculatrice(s); calculator
+noun; m; s; le; chat de compagnie; pet cat
+noun; m; s(p); le; chat(s); cat
+noun; m; s(p); le; château(x); castle
+noun; m; s(p); le; cheval(chevaux); horse
+noun; m; s(p); le; chien(s); dog
+noun; m; s; le; chocolat; chocolate
+noun; f; s; la; chouette; owl
+noun; m; s; le; cinéma; cinema
+noun; m; s(p); le; couteau(x); knife
+noun; m; s(p); le; croissant(s); crescent
+noun; f; s(p); la; cuillère(s); spoon
+noun; f; s(p); l´; eau(x); water
+noun; f; s(p); l'; école(s); school
+noun; m; s(p); l'; étudiant(s); student
+noun; f; s(p); l'; étudiante(s); student
+noun; f; s(p); la; famille(s); family
+noun; f; s(p); la; femme(s); wife
+noun; f; s(p); la; fille(s); daughter
+noun; m; s&p; le; fils; son
+noun; f; s(p); la; fourchette(s); fork
+noun; m; s(p); le; frère(s); brother
+noun; m; s(p); le; garçon(s); boy
+noun; f; s(p); la; gare(s); station
+noun; f; s(p); la; grand-mère(s); grandmother
+noun; m; s(p); l'; homme(s); man
+noun; m; s(p); l'; hôtel(s); hotel
+noun; m; s(p); le; jardin(s); garden
+noun; m; s(p); le; journaliste(s); journalist
+noun; m; s&p; le; jus; juice
+noun; m; s(p); le; livre(s); book
+noun; f; s(p); la; maison(s); house
+noun; m; s(p); le; mari(s); husband
+noun; f; s(p); la; mère(s); mother
+noun; m; s(p); le; métro(s); subway
+noun; f; s; la; musique; music
+noun; f; s(p); l'; orange(s); orange
+noun; m; s(p); le; parc(s); park
+noun; m; s(p); le; passeport(s); passport
+noun; m; s(p); le; père(s); father
+noun; f; s(p); la; pizza(s); pizza
+noun; m; s(p); le; poisson(s); fish
+noun; m; s(p); le; professeur(s); teacher
+noun; m; s(p); le; restaurant(s); restaurant
+noun; m; s(p); le; serveur(s); waiter
+noun; f; s(p); la; sœur(s); sister
+noun; f; s(p); la; table(s); table
+noun; f; s(p); la; tasse(s); cup
+noun; f; p; la; mathématique; math
+noun; m; s(p); le; taxi(s); taxi
+noun; m; s; le; thé; tea
+noun; m; s(p); le; train(s); train
+noun; m; s; le; travail; work
+noun; f; s(p); l'; université(s); university
+noun; f; s(p); la; valise(s); suitcase
+noun; m; s(p); le; verre(s); glass
+noun; m; s(p); le; vin(s); wine
+noun; f; s(p); la; voiture(s); car
+noun; m; s(p); le; zoo(s); zoo
+
+phrase; Au revoir; goodbye
+phrase; Oui; Yes
+phrase; Non; No
+phrase; Merci; Thank you
+phrase; Merci beaucoup; Thank you very much
+phrase; S’il vous plaît; If it you please
+###
+phrase; Bonjour; good day
+phrase; Bonjour, comment ça va ?; Good day. How's it going?
+phrase; bonne journée; have a good day
+phrase; Bon soir; Good evening
+phrase; Bonne soirée; Have a good evening
+phrase; Bonne nuit; Good night
+###
+phrase; Excusez-moi; Excuse me
+phrase; De rien; You’re welcome
+phrase; Ça va très bien, et toi ?; I am doing very well, and you?
+phrase; Ça va.; I am fine.
+phrase; comment tu t'appelles; what's your name
+phrase; comment t'appelles-tu; what call your
+phrase; à demain; see you tomorrow
+phrase; à bientôt; see you soon
+phrase; salut; hi
+phrase; dáccord; OK
+phrase; J´ai une question; I have a question.
+phrase; Mise en place; putting in place
+phrase; je ne sais pas; I don't know
+
+phrase; zéro un deux trois; zero one two three
+phrase; un deux trois; one two three
+phrase; quatre, cinq, siz; four, five, six
+phrase; sept, huit, neuf; seven, eight, nine
+phrase; dix, onze, douze, trize; ten, eleven, twelve, thirteen
+
+
+# Question words and phrase?
+
+#Categories
+# Food
+# Animals
+# Locations
+# Vehicals of transportation
+# Persons
+# Objects
+#
+#noun; m; le; billet d'avion; airfare
+
+phrase; Qui; who
+phrase; Que; what
+phrase; Quoi; what
+phrase; Où; where
+phrase; Quand; when
+phrase; Pourquoi; why
+phrase; Comment; how
+
+#Masculine; Feminine; MasculinePlural; FemininePlural
+# Add friend;  ami;  amie;  amis;  amies
+
+#Add
+#languages
+
+# Add
+# Ce sont ; these are ...
+# C´est ; this is ...
+phrase; Ce sont ; these are
+phrase; C´est ; this is
+
+
+
+# Couleurs
+phrase; jaune; yellow
+phrase; orange; orange
+phrase; rouge; red
+phrase; rose; pink
+phrase; violet; purple
+phrase; bleu; blue
+phrase; vert; green
+phrase; noir; black
+phrase; brun; brown
+phrase; marron; chestnut
+phrase; gris; gray
+phrase; blanc; white
+phrase; bleu clair; light blue
+phrase; vert foncé; dark green
+#Light and dark
+#The qualifiers clair (light) and foncé (dark) can be used with any color:
+#violet clair, vert clair (light purple, light green)
+#rouge foncé, bleu foncé (dark red, dark blue)
+#Agreement
+#Colors are adjectives, and like other adjectives, they usually must agree with the nouns they modify in gender and #number. For colors that are pronounced differently when masculine vs feminine (e.g., gris/grise, violet/violette, #blanc/blanche), both are pronounced in the sound files.
+
+
+# Adjectives
+#; English; position; Masculine; Feminine; MasculinePlural; FemininePlural
+# Regular; english; position; base; +e; +s; +es;
+adjective; small; before; petit; petite; petits; petites
+adjective; tired; after; fatigué; fatiguée; fatigués; fatiguées
+adjective; perfect; after; parfait; parfaite; parfaits; parfaites
+adjective; large; before; grand; grande; grands; grandes
+adjective; intelligent; after; intelligent; intelligente; intelligents; intelligentes
+adjective; interesting; after; intéressant; intéressante; intéressants; intéressantes
+adjective; happy; after; content; contente; contents; contentes
+adjective; funny; after; amusant; amusante; amusants; amusantes
+
+# Irregular; ; ; ; ; ;
+adjective; beautiful; before; beau; belle; beaux; belles
+adjective; sweet; after; doux; douce; doux; douces
+adjective; good; before; bon; bonne; bons; bonnes
+
+phrase; être; to be
+
+#Personal Subject Pronouns; m f s p
+pronoun; je; mfs; I
+pronoun; tu; mfs; you
+pronoun; il; ms; he
+pronoun; elle; fs; she
+pronoun; nous; mfp; we
+pronoun; vous; mfsp; you
+pronoun; ils; mp; they
+pronoun; elles; fp; they
+
+#Based on the object
+# English;  Masculine; Feminine; Masculine&FemininePlural
+#my;  mon;  ma;  mes
+#his/her;  son;  sa;  ses
+#your;  ton;  ta;  tes
+
+
+
+
+# All english verbs (except to be) have five different forms.
+verb; infinitive; Base; 3rd Person Singular; je; tu; il/elle; nous; vous; ils/elles
+verb; aimer; like; likes; aime; aimes; aime; aimons; aimez; aiment
+verb; aller; go; goes; vais; vas; va; allons; allez; vont
+verb; avoir; have; has; ai; as; a; avons; avez; ont
+verb; être; are; is; suis; es; est; sommes; êtes; sont
+verb; étudier; study; studies; étudie; étudies; étudie; étudions; étudiez; étudient
+verb; habiter; live; lives; habite; habites; habite; habitons; habitez; habitent
+#verb; lire; read; reads; lis; lis; lit; lisons; lisez; lisent
+verb; manger; eat; eats; mange; manges; mange; mangeons; mangez; mangent
+verb; parler; speak; speaks; parle; parles; parle; parlons; parlez; parlent
+verb; prendre; take; takes; prends; prends; prend; prenons; prenez; prennent
+verb; travailler; work; works; travaille; travailles; travaille; travaillons; travaillez; travaillent
+verb; vouloir; want; wants; veux; veux; veut; voulons; voulez; voulent
