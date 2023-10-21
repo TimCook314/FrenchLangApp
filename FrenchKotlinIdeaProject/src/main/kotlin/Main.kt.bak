@@ -1,0 +1,283 @@
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileReader
+
+
+// ---------------------------
+
+fun main(args: Array<String>) {
+    println("Hello World!")
+
+    // Try adding program arguments via Run/Debug configuration.
+    // Learn more about running applications: https://www.jetbrains.com/help/idea/running-applications.html.
+    println("Program arguments: ${args.joinToString()}")
+
+    readVocabData("G:\\My Drive\\French\\BasicVocab_1.txt")
+    speakIt()
+    if ((0..1).random() > 20) {
+        readVocabData("G:\\My Drive\\French\\TestVocab2.txt")
+    }
+}
+
+
+private fun reportIt(txt: String) {
+    println(txt)
+}
+
+private fun speakIt() {
+    var itemsPlayed = 0
+    while (itemsPlayed < 10) {
+        itemsPlayed++
+        val fAndEPair = getThePhrase()
+        val toPrint = "${fAndEPair.fTxt} --> ${fAndEPair.eTxt}"
+        reportIt(toPrint)
+    }
+}
+
+//! private fun readVocalData(context: Context, uri: Uri, name: String) {
+private fun readVocabData( name: String) {
+    if (name == "none") {
+        return
+    }
+    println("Reading file.")
+    try {
+        val file = File(name)
+        val bufferedReader = BufferedReader(FileReader(file))
+        val linesRead = readIt(bufferedReader)
+        reportIt("  Lines read is $linesRead")
+        // Close the BufferedReader
+        bufferedReader.close()
+    } catch (e: Exception) {
+        reportIt("*** Error accessing file.")
+    }
+}
+
+
+//fun addTheToStartOfNoun( noun: String, mf: String ) {
+//    var startsWithVowel = false
+//
+//    var char1 = noun.lowercase()[0]
+//    if (char1 == 'h') {
+//        //use second character
+//        char1 = noun.lowercase()[1]
+//    }
+//    when (char1) {
+//        'a' -> { startsWithVowel = true }
+//        'e' -> { startsWithVowel = true }
+//        'i' -> { startsWithVowel = true }
+//        'o' -> { startsWithVowel = true }
+//        'u' -> { startsWithVowel = true }
+//        '�' -> { startsWithVowel = true }
+//        '�' -> { startsWithVowel = true }
+//        '�' -> { startsWithVowel = true }
+//        '�' -> { startsWithVowel = true }
+//        '�' -> { startsWithVowel = true }
+//        '�' -> { startsWithVowel = true }
+//        '�' -> { startsWithVowel = true }
+//        '�' -> { startsWithVowel = true }
+//        '�' -> { startsWithVowel = true }
+//        '�' -> { startsWithVowel = true }
+//        '�' -> { startsWithVowel = true }
+//        '�' -> { startsWithVowel = true }
+//    }
+//}
+
+// --------------------
+
+
+//Classes -----
+class Noun {
+    var fGender: Char = 'm'
+    var fPrefix: String = ""
+    var fNoun: String = ""
+    var eNoun: String = ""
+    var freq: Int = 1
+}
+
+class Adjective {
+    var eAdj: String = ""
+    var relPos: String = ""
+    var masculine: String = ""
+    var feminine: String = ""
+    var masculinePlural: String = ""
+    var femininePlural: String = ""
+    var freq: Int = 1
+}
+
+class Phrase {
+    var fPhrase: String = ""
+    var ePhrase: String = ""
+    var freq: Int = 1
+}
+
+class LangData {
+    var frenchSpeed: Float = 1.0f
+    var frenchPauseFactor: Double = 1.0
+    var phrasePatterns = mutableListOf<String>()
+    var audioPattern: String = "fef"
+    var frenchVoice: String = ""
+    var englishVoice: String = ""
+
+    val nouns = mutableListOf<Noun>()
+    val adjectives = mutableListOf<Adjective>()
+    val phrases = mutableListOf<Phrase>()
+
+}
+
+data class FAndEPair(val fTxt: String, val eTxt: String)
+
+
+//Data ------
+private var vocabList: LangData = LangData()
+
+//Code  ------------
+
+
+
+
+fun readIt(bufferedReader: BufferedReader): Int {
+    var linesRead = 0
+    try {
+        // Use a loop to read each line until the end of the file
+        var line: String?
+        do {
+            line = bufferedReader.readLine()
+            linesRead++
+            if (line == null) {
+                break
+            }
+            line = line.trim()
+            if (line.startsWith("#")) {
+                continue
+            } else if (line.startsWith("@")) {
+                //code it
+                val parts = line.split("=")
+                val part0 = parts[0].drop(1).trim()
+                when (part0) {
+                    "frenchSpeed" -> {
+                        vocabList.frenchSpeed = parts[1].toFloat()
+                    }
+                    "frenchPauseFactor" -> {
+                        vocabList.frenchPauseFactor = parts[1].toDouble()
+                    }
+                    "phrasePatterns" -> {
+                        vocabList.phrasePatterns.add( parts[1].trim() )
+                    }
+                    "audioPattern" -> {
+                        vocabList.audioPattern = parts[1].trim()
+                    }
+                    "frenchVoice" -> {
+                        vocabList.frenchVoice = parts[1].trim()
+                    }
+                    "englishVoice" -> {
+                        vocabList.englishVoice = parts[1].trim()
+                    }
+                    else -> {
+                        reportIt("*** Error parsing line $line")
+                        //code
+                    }
+                }
+            } else {
+                val parts = line.split(";")
+                val part0 = parts[0].lowercase().trim()
+                when (part0) {
+                    "noun" -> {
+                        val the = Noun()
+                        the.fGender = parts[1].trim()[0]
+                        the.fPrefix = parts[2].trim()
+                        the.fNoun = parts[3].trim()
+                        the.eNoun = parts[4].trim()
+                        if (parts.size >= (5 + 1)) {
+                            the.freq = parts[5].toInt()
+                        }
+                        vocabList.nouns.add(the)
+                    }
+
+                    "adjective" -> {
+                        val the = Adjective()
+                        the.eAdj = parts[1].trim()
+                        the.relPos = parts[2].trim()
+                        the.masculine = parts[3].trim()
+                        the.feminine = parts[4].trim()
+                        the.masculinePlural = parts[5].trim()
+                        the.femininePlural = parts[6].trim()
+                        if (parts.size >= (7 + 1)) {
+                            the.freq = parts[7].toInt()
+                        }
+                        vocabList.adjectives.add(the)
+                    }
+
+                    "phrase" -> {
+                        val the = Phrase()
+                        the.fPhrase = parts[1].trim()
+                        the.ePhrase = parts[2].trim()
+                        if (parts.size >= (3 + 1)) {
+                            the.freq = parts[3].toInt()
+                        }
+                        vocabList.phrases.add(the)
+                    }
+
+                    else -> {
+                        //code
+                    }
+                }
+            }
+        } while (true) // (line != null)
+    } catch (e: Exception) {
+        reportIt("*** Error reading file at about line $linesRead")
+    }
+    return linesRead
+}
+
+private fun getThePhrase(): FAndEPair {
+    var fText1 = "Erreur!"
+    var eText1 = "Error!"
+    //Decide what to do next
+    val pattern = vocabList.phrasePatterns.random()
+    when (pattern) {
+        "phrase" -> {
+            val phrase = vocabList.phrases.random()
+            fText1 = phrase.fPhrase
+            eText1 = phrase.ePhrase
+
+        }
+        "noun" -> {
+            val noun = vocabList.nouns.random()
+            fText1 = noun.fNoun
+            eText1 = noun.eNoun
+
+        }
+        "the noun" -> {
+            val noun = vocabList.nouns.random()
+            fText1 = if (noun.fPrefix.endsWith("'")) {
+                noun.fPrefix + noun.fNoun
+            } else {
+                noun.fPrefix + " " + noun.fNoun
+            }
+            eText1 = "the ${noun.eNoun}"
+        }
+        "Je suis {adjective.Masculine or adjective.Feminine}" -> {
+            val adj = vocabList.adjectives.random()
+            // will return an `Int` between 0 and 10 (incl.)
+            val bob = (0..1).random()
+            val fAdj = if (bob == 0) {
+                adj.masculine
+            } else {
+                adj.feminine
+            }
+            if ((0..3).random() >=3) {
+                //"je suis tr�s grand"
+                val fMore = "très"
+                val eMore = "very"
+                fText1 = "Je suis $fMore $fAdj"
+                eText1 = "I am $eMore ${adj.eAdj}"
+            } else {
+                fText1 = "Je suis $fAdj"
+                eText1 = "I am ${adj.eAdj}"
+            }
+        }
+
+    }
+    return FAndEPair(fText1, eText1)
+}
+
