@@ -7,84 +7,92 @@
 
 #What to do
 #@ phrasePatterns = noun
-@ phrasePatterns = the noun
+#@ phrasePatterns = the noun
+@ phrasePatterns = the noun a nouns
 @ phrasePatterns = phrase
 #@ phrasePatterns = Je suis {adjective.Masculine or adjective.Feminine}
 #@ phrasePatterns = {pronoun} are {adjective}
 #@ phrasePatterns = {pronoun} are {adjective}
 #@ phrasePatterns = {pronoun} are {adjective}
 
-#Type; Gender; Quan.;Article; Noun; English
-noun; m; s(p); l'; aéroport(s); airport
-noun; m; s(p); l'; appartement(s); apartment
-noun; f; s(p); l'; assiette(s); plate
-noun; m; s(p); l'; avion(s); airplane
-noun; m; s(p); le; bébé(s); baby
-noun; f; s(p); la; banque(s); bank
-noun; f; s; la; bienvenue; welcome
-noun; f; s(p); la; bière(s); beer
-noun; f; s(p); la; boulangerie(s); bakery
-noun; m; s&p; le; bus; bus
-noun; m; s; le; café; coffee
-noun; f; s(p); la; calculatrice(s); calculator
-noun; m; s; le; chat de compagnie; pet cat
-noun; m; s(p); le; chat(s); cat
-noun; m; s(p); le; château(x); castle
-noun; m; s(p); le; cheval(chevaux); horse
-noun; m; s(p); le; chien(s); dog
-noun; m; s; le; chocolat; chocolate
-noun; f; s; la; chouette; owl
-noun; m; s; le; cinéma; cinema
-noun; m; s(p); le; couteau(x); knife
-noun; m; s(p); le; croissant(s); crescent
-noun; f; s(p); la; cuillère(s); spoon
-noun; f; s(p); l´; eau(x); water
-noun; f; s(p); l'; école(s); school
-noun; m; s(p); l'; étudiant(s); student
-noun; f; s(p); l'; étudiante(s); student
-noun; f; s(p); la; famille(s); family
-noun; f; s(p); la; femme(s); wife
-noun; f; s(p); la; fille(s); daughter
-noun; m; s&p; le; fils; son
-noun; f; s(p); la; fourchette(s); fork
-noun; m; s(p); le; frère(s); brother
-noun; m; s(p); le; garçon(s); boy
-noun; f; s(p); la; gare(s); station
-noun; f; s(p); la; grand-mère(s); grandmother
-noun; m; s(p); l'; homme(s); man
-noun; m; s(p); l'; hôtel(s); hotel
-noun; m; s(p); le; jardin(s); garden
-noun; m; s(p); le; journaliste(s); journalist
-noun; m; s&p; le; jus; juice
-noun; m; s(p); le; livre(s); book
-noun; f; s(p); la; maison(s); house
-noun; m; s(p); le; mari(s); husband
-noun; f; s(p); la; mère(s); mother
-noun; m; s(p); le; métro(s); subway
-noun; f; s; la; musique; music
-noun; f; s(p); l'; orange(s); orange
-noun; m; s(p); le; parc(s); park
-noun; m; s(p); le; passeport(s); passport
-noun; m; s(p); le; père(s); father
-noun; f; s(p); la; pizza(s); pizza
-noun; m; s(p); le; poisson(s); fish
-noun; m; s(p); le; professeur(s); teacher
-noun; m; s(p); le; restaurant(s); restaurant
-noun; m; s(p); le; serveur(s); waiter
-noun; f; s(p); la; sœur(s); sister
-noun; f; s(p); la; table(s); table
-noun; f; s(p); la; tasse(s); cup
-noun; f; p; la; mathématique; math
-noun; m; s(p); le; taxi(s); taxi
-noun; m; s; le; thé; tea
-noun; m; s(p); le; train(s); train
-noun; m; s; le; travail; work
-noun; f; s(p); l'; université(s); university
-noun; f; s(p); la; valise(s); suitcase
-noun; m; s(p); le; verre(s); glass
-noun; m; s(p); le; vin(s); wine
-noun; f; s(p); la; voiture(s); car
-noun; m; s(p); le; zoo(s); zoo
+#Type; Gender; Quan.;Article; elision; Noun; English; weight
+noun; m; s(p); l'; y; aéroport(s); airport(s);c; 
+noun; m; s(p); l'; y; appartement(s); apartment(s);c; 
+noun; f; s(p); l'; y; assiette(s); plate(s);c; 2
+noun; m; s(p); l'; y; avion(s); airplane(s);c; 
+noun; f; s(p); la; n; banque(s); bank(s);c; 
+noun; m; s(p); le; n; bébé(s); baby(babies);c; 
+noun; f; s; la; n; bienvenue; welcome;; 
+noun; f; s(p); la; n; bière(s); beer(s);c; 
+noun; f; s(p); la; n; boulangerie(s); bakery(bakeries);c; 
+noun; m; s&p; le; n; bus; bus(es);c; 
+noun; m; s; le; n; café; coffee(s);c; 
+noun; f; s(p); la; n; calculatrice(s); calculator(s);c; 
+noun; m; s; le; n; chat de compagnie; pet(s);; 
+noun; m; s(p); le; n; chat(s); cat(s);c; 
+noun; m; s(p); le; n; château(x); castle(s);c; 
+noun; m; s(p); le; n; cheval(chevaux); horse(s);c; 
+noun; m; s(p); le; n; chien(s); dog(s);c; 
+noun; m; s; le; n; chocolat; chocolate(s);; 
+noun; f; s; la; n; chouette; owl(s);; 
+noun; m; s; le; n; cinéma; cinema;; 
+noun; m; s(p); le; n; couteau(x); knife(s);c; 
+noun; m; s(p); le; n; croissant(s); crescent(s);c; 
+noun; f; s(p); la; n; cuillère(s); spoon(s);c; 
+noun; f; s(p); l'; y; eau(x); water(s);c; 
+noun; f; s(p); l'; y; école(s); school(s);c; 
+noun; f; s(p); l'; y; église(s); church(es);c; 
+noun; m; s(p); l'; y; étudiant(s); student(s);c; 
+noun; f; s(p); l'; y; étudiante(s); student(s);c; 
+noun; f; s(p); la; n; famille(s); family(families);c; 
+noun; f; s(p); la; n; femme(s); wife(s);c; 
+noun; f; s(p); la; n; fille(s); daughter(s);c; 
+noun; m; s&p; le; n; fils; son(s);c; 
+noun; f; s(p); la; n; fourchette(s); fork(s);c; 
+noun; m; s(p); le; n; frère(s); brother(s);c; 
+noun; m; s(p); le; n; garçon(s); boy(s);c; 
+noun; f; s(p); la; n; gare(s); station(s);c; 
+noun; f; s(p); la; n; grand-mère(s); grandmother(s);c; 
+noun; m; s(p); l'; y; homme(s); man(men);c; 
+noun; m; s(p); l'; y; hôtel(s); hotel(s);c; 
+noun; m; s(p); le; n; jardin(s); garden(s);c; 
+noun; m; s(p); le; n; journaliste(s); journalist(s);c; 
+noun; m; s&p; le; n; jus; juice(s);c; 
+noun; f; p; la; n; les vacances; vacation(s);c; 
+noun; m; s(p); le; n; livre(s); book(s);c; 
+noun; m; s(p); le; n; magasin(s); store(s);c; 
+noun; f; s(p); la; n; maison(s); house(s);c; 
+noun; m; s(p); le; n; mari(s); husband(s);c; 
+noun; f; p; la; n; mathématique; math;; 
+noun; f; s(p); la; n; mère(s); mother(s);c; 
+noun; m; s(p); le; n; métro(s); subway(s);c; 
+noun; m; s(p); le; n; musée(s); museum(s);c; 
+noun; f; s; la; n; musique; music;; 
+noun; f; s(p); l'; y; orange(s); orange(s);c; 
+noun; m; s(p); le; n; parc(s); park(s);c; 
+noun; m; s(p); le; n; passeport(s); passport(s);c; 
+noun; m; s&p; le; n; pays; country(countries);c; 2
+noun; m; s(p); le; n; père(s); father(s);c; 
+noun; f; s(p); la; n; pizza(s); pizza(s);c; 
+noun; f; s(p); la; n; plage(s); beach(es);c; 
+noun; m; s(p); le; n; poisson(s); fish;c; 
+noun; m; s(p); le; n; professeur(s); teacher(s);c; 
+noun; m; s(p); le; n; restaurant(s); restaurant(s);c; 
+noun; m; s(p); le; n; serveur(s); waiter(s);c; 
+noun; f; s(p); la; n; sœur(s); sister(s);c; 
+noun; f; s(p); la; n; table(s); table(s);c; 
+noun; f; s(p); la; n; tasse(s); cup(s);c; 
+noun; m; s(p); le; n; taxi(s); taxi(s);c; 
+noun; m; s; le; n; thé; tea(s);c; 
+noun; m; s(p); le; n; train(s); train(s);c; 
+noun; m; s; le; n; travail; work(s);; 
+noun; f; s(p); l'; y; université(s); university(universities);c; 
+noun; f; s(p); la; n; valise(s); suitcase(s);c; 3
+noun; m; s(p); le; n; verre(s); glass(es);c; 
+noun; m; s(p); le; n; vin(s); wine(s);c; 
+noun; f; s(p); la; n; voiture(s); car(s);c; 
+noun; m; s(p); le; n; zoo(s); zoo(s);c; 
+
 
 phrase; Au revoir; goodbye
 phrase; Oui; Yes

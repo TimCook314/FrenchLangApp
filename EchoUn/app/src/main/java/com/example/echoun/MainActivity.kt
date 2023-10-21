@@ -47,7 +47,7 @@ import java.util.Locale
 
 private var theFilePathText = mutableStateOf("none")
 private var thePlayButtonText = mutableStateOf("Start Playing")
-private var asText = mutableStateListOf("App started Version: 9:28 9/13")
+private var asText = mutableStateListOf("App started Version: 9:28 10/21")
 private var itemsPlayed = 0
 private var isPlaying = false
 private var reqStop = false
@@ -521,10 +521,13 @@ class Noun {
     var wordGender: Gender = Gender.Unset
     var wordQuantity: Quantity = Quantity.Unset
     var article: String = ""
-    var sText: String = ""
-    var pText: String = ""
-    var eText: String = ""
-    //var freq: Int = 1
+    var elision: Boolean = false
+    var fTextS: String = ""
+    var fTextP: String = ""
+    var eTextS: String = ""
+    var eTextP: String = ""
+    var meta: String = ""
+    var weight: Float = 1.0f
 }
 
 class Adjective {
@@ -680,23 +683,63 @@ fun readIt(bufferedReader: BufferedReader): Int {
                         the.wordGender = stringToGender(parts[1].trim())
                         the.wordQuantity = stringToQuantity(parts[2].trim())
                         the.article = parts[3].trim()
-                        val txt1: String = parts[4].trim()
-                        val iStart = txt1.indexOf('(')
-                        if (iStart < 0) {
-                            the.sText = txt1
-                            the.pText = txt1
+                        the.elision = stringToElision(parts[4].trim())
+                        var rc: Int = 0
+                        var txt1: String = parts[5].trim()
+                        //{
+                        var sText: String // = "error"
+                        var pText: String // = "errors"
+                        var iStart = txt1.indexOf("(")
+                        if (iStart < 0) { //Noun has the same form in the singular and the plural: fish, etc
+                            sText = txt1
+                            pText = txt1
                         } else {
-                            val iEnd = txt1.indexOf(')')
-                            val sForm = txt1.substring(0,iStart)
-                            var pForm = txt1.substring(iStart+1,iEnd)
-                            if (pForm.length <= 1) {
-                                pForm = sForm + pForm
+                            val iEnd = txt1.indexOf(")")
+                            if (iEnd < 0) { //Found opening but no closing
+                                rc++
                             }
-                            the.sText = sForm
-                            the.pText = pForm
+                            sText = txt1.substring(0,iStart)
+                            pText = txt1.substring(iStart+1,iEnd)
+                            if (pText.length <= 2) { //If the plural is 2 characters or less, it is a suffix: such as:  s, es
+                                pText = sText + pText
+                            }
                         }
-                        the.eText = parts[5].trim()
-                        vocabList.nouns.add(the)
+                        //}
+                        the.fTextS = sText
+                        the.fTextP = pText
+                        //txt2SingleAndPluralNouns(txt1, rc, the.fTextS, the.fTextP)
+
+                        txt1 = parts[6].trim()
+                        //{
+                        //sText = "error"
+                        //pText = "errors"
+                        iStart = txt1.indexOf("(")
+                        if (iStart < 0) { //Noun has the same form in the singular and the plural: fish, etc
+                            sText = txt1
+                            pText = txt1
+                        } else {
+                            val iEnd = txt1.indexOf(")")
+                            if (iEnd < 0) { //Found opening but no closing
+                                rc++
+                            }
+                            sText = txt1.substring(0,iStart)
+                            pText = txt1.substring(iStart+1,iEnd)
+                            if (pText.length <= 2) { //If the plural is 2 characters or less, it is a suffix: such as:  s, es
+                                pText = sText + pText
+                            }
+                        }
+                        //}
+                        the.eTextS = sText
+                        the.eTextP = pText
+                        //txt2SingleAndPluralNouns(txt2, rc, the.eTextS, the.eTextP)
+
+                        if ((parts.size >= (8 + 1)) && (parts[8].trim().length > 1)) {
+                            the.weight = parts[8].toFloat()
+                        }
+
+                        if ( rc <= 0 ) {
+                            vocabList.nouns.add(the)
+                        }
                     }
 
                     "adjective" -> {
@@ -762,6 +805,7 @@ private fun getThePhrase(): FAndEPair {
             val phrase = vocabList.phrases.random()
             fText1 = phrase.fPhrase
             eText1 = phrase.ePhrase
+
         }
         "noun" -> {
             val aNoun = getAnyNoun()
@@ -776,6 +820,35 @@ private fun getThePhrase(): FAndEPair {
                 aNoun.article + " " + aNoun.fTxt
             }
             eText1 = "the ${aNoun.eTxt}"
+        }
+        "the noun a nouns" -> {
+            val noun = vocabList.nouns.random()
+            eText1 = "Nouns error"
+
+            var quan: Quantity = noun.wordQuantity
+            if (quan == Quantity.Either) {
+                if ((1..2).random() == 1) {
+                    quan = Quantity.Single
+                } else {
+                    quan = Quantity.Plural
+                }
+            }
+
+            if (quan == Quantity.Single) {
+                var unUne: String = "une"
+                if (noun.wordGender == Gender.M) {
+                    unUne = "un"
+                }
+                fText1 = if (noun.elision) {
+                    noun.article + noun.fTextS + ", " + unUne + " " + noun.fTextS
+                } else {
+                    noun.article + " " + noun.fTextS + ", " + unUne + " " + noun.fTextS
+                }
+                eText1 = "the ${noun.eTextS}, a ${noun.eTextS}"
+            } else if (quan == Quantity.Plural) {
+                fText1 = "les " + noun.fTextP + ", des " + noun.fTextP
+                eText1 = "the ${noun.eTextP}, some ${noun.eTextP}"
+            }
         }
         "Je suis {adjective.Masculine or adjective.Feminine}" -> {
             val subjectGender: Gender = Gender.values().random()
@@ -948,18 +1021,25 @@ private fun getAnyNoun(): ANoun {
         pqg.gender = noun.wordGender
         pqg.perspective = Perspective.Third
         article = noun.article
-        fTxt = noun.sText
-        eTxt = noun.eText
+        fTxt = noun.fTextS
+        eTxt = noun.eTextS
     } else if (pqg.quantity == Quantity.Plural) {
         pqg.quantity = Quantity.Plural
         pqg.gender = noun.wordGender
         pqg.perspective = Perspective.Third
         article = "les"
-        fTxt = noun.pText
-        eTxt = noun.eText + "s"
+        fTxt = noun.fTextP
+        eTxt = noun.eTextP
     }
     return ANoun(pqg, article, fTxt, eTxt)
 }
+
+
+
+
+
+
+
 private fun stringToGender(txt: String): Gender {
     val txt2 = txt.trim().lowercase()
     if (txt2 == "m") {
@@ -968,6 +1048,11 @@ private fun stringToGender(txt: String): Gender {
         return Gender.F
     }
     return Gender.Unset
+}
+
+private fun stringToElision(txt: String): Boolean {
+    val txt2 = txt.trim().lowercase()
+    return txt2 == "y"
 }
 private fun stringToQuantity(txt: String): Quantity {
     val txt2 = txt.trim().lowercase()
@@ -982,3 +1067,33 @@ private fun stringToQuantity(txt: String): Quantity {
     }
     return Quantity.Unset
 }
+
+//private fun txt2SingleAndPluralNouns(txt: String, rc: Int, sText: String, pText: String){
+//    sText = "error"
+//    pText = "errors"
+//    val iStart = txt.indexOf("(")
+//    if (iStart < 0) { //Noun has the same form in the singular and the plural: fish, etc
+//        sText = txt1
+//        pText = txt1
+//    } else {
+//        val iEnd = txt1.indexOf(")")
+//        if (iEnd < 0) { Found opening but no closing
+//            rc++
+//            return
+//        }
+//        sText = txt1.substring(0,iStart)
+//        if (pForm.length <= 2) { //If the plural is 2 charactes or less, it is a suffix: such as:  s, es
+//            pText = sForm + txt1.substring(iStart+1,iEnd)
+//        } else {
+//            pText = txt1.substring(iStart+1,iEnd)
+//        }
+//    }
+//}
+
+//private fun getArtial
+//    var subjectPart: SubjectPart = SubjectPart()
+//
+//    subjectPart.gender = SubjectGender.m
+//
+//    return subjectPart
+//}
