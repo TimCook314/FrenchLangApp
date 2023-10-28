@@ -34,3 +34,7 @@ google-services.json
 
 # Kotlin run files
 *.jar
+
+#Python venv
+FrenchPythonDev/env
+FrenchPythonDev/audio
