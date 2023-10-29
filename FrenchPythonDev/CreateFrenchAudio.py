@@ -5,7 +5,7 @@ from gtts import gTTS
 
 def createFrenchAudioOfString(frenchText, fileName):
     #fileName = fText.strip().lower().replace(" ", "_").replace("@", "'")
-    fObj = gTTS(text=frenchText, lang="fr-fr", slow=False)
+    fObj = gTTS(text=frenchText, lang="fr-fr", slow=True)
     fObj.save(".\\audio\\" + fileName + ".mp3")
 
 

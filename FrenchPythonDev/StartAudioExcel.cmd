@@ -13,5 +13,15 @@ if %errorlevel% neq 0 (
     exit /b
 )
 
+
+pause
+
+echo path
+
+path
+
+
+pause
+
 :: Launch Excel with the specified workbook
 start excel "TryFrench.xlsm"
