@@ -2,29 +2,24 @@ import sys
 import os
 from gtts import gTTS
 
-
-def createFrenchAudioOfString(frenchText, fileName):
+def createFrenchAudioOfString(frenchText, fileName, T_F):
+    SpeakSlow = False
+    if (T_F[0:1] == "T"):
+        SpeakSlow = True
     #fileName = fText.strip().lower().replace(" ", "_").replace("@", "'")
-    fObj = gTTS(text=frenchText, lang="fr-fr", slow=True)
+    fObj = gTTS(text=frenchText, lang="fr-fr", slow=SpeakSlow)
     fObj.save(".\\audio\\" + fileName + ".mp3")
 
 
-def count_letters_in_string(input_string):
-    letter_count = sum(1 for char in input_string if char.isalpha())
-    return letter_count
-
-
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python count_letters.py 'your string with spaces'")
+    if len(sys.argv) < 4:
+        print('Usage: python idk.py "your string with spaces", "file name", T/F for slow)')
         sys.exit(1)
-
     #print("Arguments: " + str(len(sys.argv)))
     input_string = sys.argv[1]
     fileName = sys.argv[2]
-    createFrenchAudioOfString(input_string,fileName)
+    T_F = sys.argv[3]
+    createFrenchAudioOfString(input_string,fileName,T_F)
     print("OK")
     sys.exit(0)
     
-    #letter_count = count_letters_in_string(input_string)
-    #print("Letter count:", letter_count)

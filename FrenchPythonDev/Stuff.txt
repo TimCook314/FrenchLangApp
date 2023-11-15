@@ -5,4 +5,7 @@ python -m venv env
 
 pip install -r .\ requirements. txt
 
-#with   --from-history
+#with conda   --from-history
+
+
+https://learn.microsoft.com/en-us/windows/win32/wmp/controls-object

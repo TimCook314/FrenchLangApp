@@ -13,15 +13,13 @@ if %errorlevel% neq 0 (
     exit /b
 )
 
+@rem echo path
+@rem pause
 
-pause
+@rem start cmd.exe /k
 
-echo path
+@rem start cmd.exe
 
-path
-
-
-pause
 
 :: Launch Excel with the specified workbook
 start excel "TryFrench.xlsm"
