@@ -22,4 +22,4 @@ if %errorlevel% neq 0 (
 
 
 :: Launch Excel with the specified workbook
-start excel "TryFrench.xlsm"
+start excel ".\TryFrench.xlsm"
