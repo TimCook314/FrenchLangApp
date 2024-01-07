@@ -326,6 +326,7 @@ private fun speakPhrases() {
                 when (ch) {
                     'f' -> {
                         // Start the timer
+                        //tts2.si
                         tts2.speak(aPhrasePair.fTxt, TextToSpeech.QUEUE_FLUSH, null, null)
                         val startTime = SystemClock.uptimeMillis()
                         do {
