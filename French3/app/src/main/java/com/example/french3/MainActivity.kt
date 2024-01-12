@@ -13,6 +13,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -59,21 +60,29 @@ import android.content.ContentValues
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
+import androidx.compose.foundation.layout.height
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import java.io.FileOutputStream
 import java.io.OutputStream
 
+//private var isSynthesizeAudioButtonEnabled by remember { mutableStateOf(false) }
+private var isSynthesizeAudioButtonEnabled = mutableStateOf(false)
 
-private var theFilePathText = mutableStateOf("none")
-private var fileUri = mutableStateOf<Uri?>(null)
+private var phrasesFilePathText = mutableStateOf("none")
+private var phrasesFileUri = mutableStateOf<Uri?>(null)
 
 private var theFELines = mutableListOf<String>()
 
+private var ttsE_setup = false
+private var ttsF_setup = false
 private lateinit var ttsE: TextToSpeech
 private lateinit var ttsF: TextToSpeech
 
 
 
-
+//TODO: jetpack compose number picker or slider
 
 
 private var asText = mutableStateListOf("App started Version: 9:28 10/21")
@@ -100,13 +109,21 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun generateAudioFilesWrapper(){
+        val bob = this
+        CoroutineScope(Dispatchers.Main).launch {
+            generateAudioFiles(bob)
+            //delay(1234)
+        }
+        //generateAudioFiles(this)
+    }
 
     private fun someFunction() {
         val frenchText = "Bonjour"
 
         // Pass the context to the function
         generateAudioFile(this, frenchText)
-        generateAudioFiles(this)
+        //generateAudioFiles(this)
     }
 
     private fun someFunction2() {
@@ -123,22 +140,27 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun Greeting(name: String, modifier: Modifier = Modifier) {
 
+
         val scope = rememberCoroutineScope()
         val myContext = LocalContext.current
 
         val theFilePicker = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent(),
             onResult = { uri ->
-                fileUri.value = uri
+                phrasesFileUri.value = uri
                 if (uri == null) {
+                    phrasesFilePathText.value = "none"
+                    isSynthesizeAudioButtonEnabled.value = false
                     //reportIt(uri.path())
                 } else {
                     //val context = LocalContext.current
-                    //reportIt("Got new file, name is:")
-                    val itis = getUriName(this, uri)
-                    //reportIt(itis)
-                    theFilePathText.value = itis
-                    //readVocalData(this, uri, itis)
+                    reportIt("Got new file, name is:")
+                    val fileName = getUriName(this, uri)
+                    phrasesFilePathText.value = fileName
+                    if (ttsE_setup && ttsF_setup) {
+                        isSynthesizeAudioButtonEnabled.value = true
+                    }
+                    //readVocalData(this, uri, fileName)
                 }
             }
         )
@@ -148,37 +170,109 @@ class MainActivity : ComponentActivity() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            horizontalAlignment = Alignment.Start
+            //horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = "Hello $name!",
-                fontSize = 24.sp,
+                text = "Hello $name",
+                fontSize = 18.sp,
                 textAlign = TextAlign.Center,
-                modifier = modifier.padding(18.dp)
+                modifier = modifier.padding(12.dp)
             )
 
-            Button(onClick = { theFilePicker.launch("text/plain") }) {
-                Text("Vocab File Picker")
+            Divider(color = Color.LightGray, thickness = 1.dp)
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                //.height(200.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = {
+                        setupVoices(myContext)
+                    },
+                    modifier = Modifier.padding(8.dp)
+                    //.fillMaxWidth()
+                ) {
+                    Text("Setup voices")
+                }
+
+                Button(
+                    onClick = {
+                        theFilePicker.launch("text/plain")
+                    },
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text("Select phrase file")
+                }
             }
 
-            Text(
-                text = "Phrase file:",
-                //style = MaterialTheme.typography.h6,
-                textAlign = TextAlign.Start,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            Text(
-                text = theFilePathText.value,
-                //style = MaterialTheme.typography.body1,
-                textAlign = TextAlign.End,
+            Row(
                 modifier = Modifier
-                    .padding(bottom = 16.dp)
-                    .align(alignment = Alignment.End)
-            )
+                    .fillMaxWidth(),
+                //.height(60.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Phrase file:",
+                    //style = MaterialTheme.typography.h6,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .padding(bottom = 8.dp)
+                )
+
+                Text(
+                    text = phrasesFilePathText.value,
+                    //style = MaterialTheme.typography.body1,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .padding(bottom = 8.dp)
+//                    modifier = Modifier
+//                        .padding(bottom = 16.dp)
+//                        .align(alignment = Alignment.End)
+                )
+            }
+
+            Button(
+                onClick = {
+                    generateAudioFilesWrapper()
+
+
+
+
+//                    reportIt("calling .....")
+//                    scope.launch {
+//                        generateAudioFilesWrapper()
+////                        val lines = readFile(myContext, uri)
+////                        theFELines = lines.toMutableList()
+////                        // Do something with the lines
+////                        reportIt("done ! with call")
+//                    }
+//                    reportIt("After call")
+
+
+
+                },
+                enabled = isSynthesizeAudioButtonEnabled.value,
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxWidth()
+            ) {
+                Text("Generate Audio Files")
+            }
+
+
+
+
+            Divider(color = Color.LightGray, thickness = 1.dp)
+
+
+
 
             Button(onClick = {
-                val uri = fileUri.value
+                val uri = phrasesFileUri.value
                 if (uri != null) {
                     //val lines = readFile(context, uri)
                     reportIt("Reading lines")
@@ -195,16 +289,7 @@ class MainActivity : ComponentActivity() {
 
 
 
-            Button(
-                onClick = {
-                    setupVoices(myContext)
-                },
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
-            ) {
-                Text("Setup voices")
-            }
+
 
 
 
@@ -381,6 +466,7 @@ private fun setupVoices(myContext: Context) {
                     emptySet()
                 )
                 ttsE.voice = eVoice
+                ttsE_setup = true
             }
         }
     }
@@ -423,6 +509,7 @@ private fun setupVoices(myContext: Context) {
         }
     }
     ttsF = tts1
+    ttsF_setup = true
 }
 
 
@@ -440,23 +527,35 @@ private fun setupVoices(myContext: Context) {
 //}
 
 
-fun generateAudioFiles(context: Context ) {
-    reportIt("  Creating directory ")
-    createDirectoryInDocuments( context, "testing/Bob")
-    val documentsDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
-//        // Create the "testing/Bob" directory
-//        val dir = File(documentsDir, "testing/Bob").apply {
-//            if (!exists()) {
-//                mkdirs()
-//            }
-//        }
-//    reportIt("  Directory created ")
-    val dir = File(documentsDir, "/testing/Bob")
+suspend fun generateAudioFiles(context: Context ) {
+    // Get name of phrase file
+    val phraseFileName = phrasesFilePathText.value
+    //Remove the extension
+    val folderName = "French3Audio/" + File(phraseFileName).nameWithoutExtension
+    // Create the folder in Documents
+    reportIt("  Creating directory: $folderName")
+    createDirectoryInDocuments(context, folderName)
 
+    val lines = mutableListOf<String>()
+    var count = 0
+    val uri = phrasesFileUri.value
+    if (uri != null) {
+        context.contentResolver.openInputStream(uri)?.bufferedReader().use { reader ->
+            reader?.forEachLine { line ->
+                lines.add(line)
+                count++
+            }
+        }
+    }
+    reportIt("Read: $count lines")
+
+    //return
+
+    //Open the phrase file
+    //val uri = phrasesFileUri.value
     reportIt("  Generating stuff ")
-    var count: Int = 0
-    theFELines.forEachIndexed { index, string ->
-        val parts = string.split(";")
+    lines.forEachIndexed { index, line ->
+        val parts = line.split(";")
         if (parts.size >= 3) {
             val temp0 = parts[0].lowercase().trim()
             val temp1 = parts[1].trim()
@@ -464,49 +563,106 @@ fun generateAudioFiles(context: Context ) {
             when (temp0) {
                 "phrase" -> {
                     // Create a unique filename for each part
-                    // Create a unique filename for each part
-                    val filename1 = "part1_$index.wav"
-                    val filename2 = "part2_$index.wav"
+                    val filename1 = "item_$index" + "_fr.wav"
+                    val filename2 = "item_$index" + "_en.wav"
                     // Create an output Uri for each file
-                    val uri1 = createMediaStoreUri(context, "$filename1")
-                    val uri2 = createMediaStoreUri(context, "/testing/Bob/$filename2")
+                    val uri1 = createMediaStoreUri(context, folderName, filename1)
+                    val uri2 = createMediaStoreUri(context, folderName, filename2)
                     // Create a ParcelFileDescriptor for each Uri
                     val pfd1 = context.contentResolver.openFileDescriptor(uri1, "w")
                     val pfd2 = context.contentResolver.openFileDescriptor(uri2, "w")
-
-//                    // Create a unique filename for each part
-//                    val file1 = File(dir, "part1_$index.wav")
-//                    val file2 = File(dir, "part2_$index.wav")
-//                    // Create a ParcelFileDescriptor for each file
-//                    val pfd1 = ParcelFileDescriptor.open(file1, ParcelFileDescriptor.MODE_WRITE_ONLY)
-//                    val pfd2 = ParcelFileDescriptor.open(file2, ParcelFileDescriptor.MODE_WRITE_ONLY)
-
                     // Synthesize the speech to a file
                     ttsF.synthesizeToFile(temp1, Bundle(), pfd1!!, "ttsF_$index")
                     ttsE.synthesizeToFile(temp2, Bundle(), pfd2!!, "ttsE_$index")
-                    count++
+                    delay(1000)
                 }
                 else -> {
                     //code
                 }
             }
-
-
         }
+        reportIt("  Generated $index items")
     }
-    reportIt("  Generated $count items ")
 }
 
-//  did have suspend  is this needed!  Yes!  Call from coetc...
-fun createMediaStoreUri(context: Context, relativePath: String): Uri {
+
+//    reportIt("  Creating directory ")
+//    createDirectoryInDocuments( context, "testing/Bob")
+//    val documentsDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+////        // Create the "testing/Bob" directory
+////        val dir = File(documentsDir, "testing/Bob").apply {
+////            if (!exists()) {
+////                mkdirs()
+////            }
+////        }
+////    reportIt("  Directory created ")
+//    val dir = File(documentsDir, "/testing/Bob")
+
+
+//
+//    reportIt("  Generating stuff ")
+//    var count: Int = 0
+//    theFELines.forEachIndexed { index, string ->
+//        val parts = string.split(";")
+//        if (parts.size >= 3) {
+//            val temp0 = parts[0].lowercase().trim()
+//            val temp1 = parts[1].trim()
+//            val temp2 = parts[2].trim()
+//            when (temp0) {
+//                "phrase" -> {
+//                    // Create a unique filename for each part
+//                    // Create a unique filename for each part
+//                    val filename1 = "part1_$index.wav"
+//                    val filename2 = "part2_$index.wav"
+//                    // Create an output Uri for each file
+//                    val uri1 = createMediaStoreUri(context, "$filename1")
+//                    val uri2 = createMediaStoreUri(context, "/testing/Bob/$filename2")
+//                    // Create a ParcelFileDescriptor for each Uri
+//                    val pfd1 = context.contentResolver.openFileDescriptor(uri1, "w")
+//                    val pfd2 = context.contentResolver.openFileDescriptor(uri2, "w")
+//
+////                    // Create a unique filename for each part
+////                    val file1 = File(dir, "part1_$index.wav")
+////                    val file2 = File(dir, "part2_$index.wav")
+////                    // Create a ParcelFileDescriptor for each file
+////                    val pfd1 = ParcelFileDescriptor.open(file1, ParcelFileDescriptor.MODE_WRITE_ONLY)
+////                    val pfd2 = ParcelFileDescriptor.open(file2, ParcelFileDescriptor.MODE_WRITE_ONLY)
+//
+//                    // Synthesize the speech to a file
+//                    ttsF.synthesizeToFile(temp1, Bundle(), pfd1!!, "ttsF_$index")
+//                    ttsE.synthesizeToFile(temp2, Bundle(), pfd2!!, "ttsE_$index")
+//                    count++
+//                }
+//                else -> {
+//                    //code
+//                }
+//            }
+//
+//
+//        }
+//    }
+//    reportIt("  Generated $count items ")
+//}
+
+//  did have suspend  is this needed!  Yes!  Call from ...
+fun createMediaStoreUri(context: Context, folder: String, displayName: String): Uri {
     val values = ContentValues().apply {
-        put(MediaStore.MediaColumns.DISPLAY_NAME, relativePath)
+        put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
         put(MediaStore.MediaColumns.MIME_TYPE, "audio/wav")
-        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS + "/testing/Bob/")
+        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS + "/"+ folder)
     }
     return context.contentResolver.insert(MediaStore.Files.getContentUri("external"), values)!!
 }
 
+//fun createMediaStoreUri(context: Context, folder: String, displayName: String): Uri {
+//    val values = ContentValues().apply {
+//        put(MediaStore.MediaColumns.DISPLAY_NAME, relativePath)
+//        put(MediaStore.MediaColumns.MIME_TYPE, "audio/wav")
+//        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS + "/French3/")
+//        //put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/French3/")
+//    }
+//    return context.contentResolver.insert(MediaStore.Files.getContentUri("external"), values)!!
+//}
 
 
 
@@ -647,42 +803,44 @@ private fun getUriName(context: Context, uri: Uri): String {
         val ok: String = uri.path!!
         result = File(ok).name
     }
-
-    if (result != "none") {
-        // Initialize a count variable
-        var count = 0
-        //val context = LocalContext.current
-        // Use a try-catch block to handle any exceptions
-        //try {
-        // Get a BufferedReader from the Uri using the ContentResolver and the openInputStream method
-        val bufferedReader =
-            BufferedReader(InputStreamReader(context.contentResolver.openInputStream(uri)))
-
-        // Use a loop to read each line until the end of the file
-        var line = bufferedReader.readLine()
-        while (line != null) {
-            // Check if the line starts with "#"
-            if (line.startsWith("#")) {
-                // Increment the count variable
-                count++
-            }
-            // Read the next line
-            line = bufferedReader.readLine()
-        }
-
-        // Close the BufferedReader
-        bufferedReader.close()
-        reportIt("lines with # is $count")
-
-        // Display the count in a Text composable or do something else with it
-        //    Text(text = "The number of lines that start with # is $count")
-
-        //} catch (e: Exception) {
-        // Handle any exceptions, for example by displaying an error message
-        //    Text(text = "An error occurred: ${e.message}")
-        //}
-    }
     return result
+}
+private fun getUriName2(context: Context, uri: Uri): String {
+    //if (result != "none") {
+    // Initialize a count variable
+    var count = 0
+    //val context = LocalContext.current
+    // Use a try-catch block to handle any exceptions
+    //try {
+    // Get a BufferedReader from the Uri using the ContentResolver and the openInputStream method
+    val bufferedReader =
+        BufferedReader(InputStreamReader(context.contentResolver.openInputStream(uri)))
+
+    // Use a loop to read each line until the end of the file
+    var line = bufferedReader.readLine()
+    while (line != null) {
+        // Check if the line starts with "#"
+        if (line.startsWith("#")) {
+            // Increment the count variable
+            count++
+        }
+        // Read the next line
+        line = bufferedReader.readLine()
+    }
+
+    // Close the BufferedReader
+    bufferedReader.close()
+    reportIt("lines with # is $count")
+
+    // Display the count in a Text composable or do something else with it
+    //    Text(text = "The number of lines that start with # is $count")
+
+    //} catch (e: Exception) {
+    // Handle any exceptions, for example by displaying an error message
+    //    Text(text = "An error occurred: ${e.message}")
+    //}
+    //}
+    return "bob"
 }
 
 
