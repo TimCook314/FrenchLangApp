@@ -55,17 +55,21 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 import android.content.ContentResolver
+import android.content.ContentUris
 import android.content.ContentValues
 
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
+import android.speech.tts.UtteranceProgressListener
 import androidx.compose.foundation.layout.height
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.OutputStream
+
 
 //private var isSynthesizeAudioButtonEnabled by remember { mutableStateOf(false) }
 private var isSynthesizeAudioButtonEnabled = mutableStateOf(false)
@@ -78,7 +82,11 @@ private var theFELines = mutableListOf<String>()
 private var ttsE_setup = false
 private var ttsF_setup = false
 private lateinit var ttsE: TextToSpeech
+private var ttsE_hasStarted = false
+private var ttsE_hasCompleted = false
 private lateinit var ttsF: TextToSpeech
+private var ttsF_hasStarted = false
+private var ttsF_hasCompleted = false
 
 
 
@@ -109,6 +117,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun setupVoicesWrapped(context: Context){
+        //val bob = this
+        CoroutineScope(Dispatchers.Main).launch {
+            setupVoices(context)
+        }
+    }
     private fun generateAudioFilesWrapper(){
         val bob = this
         CoroutineScope(Dispatchers.Main).launch {
@@ -119,10 +133,11 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun someFunction() {
-        val frenchText = "Bonjour"
-
+        //deleteFolder(this, "Sdf")
+        deleteFolder(this, "French3Audio/idk/my")
+        //val frenchText = "Bonjour"
         // Pass the context to the function
-        generateAudioFile(this, frenchText)
+        //generateAudioFile(this, frenchText)
         //generateAudioFiles(this)
     }
 
@@ -189,7 +204,8 @@ class MainActivity : ComponentActivity() {
             ) {
                 Button(
                     onClick = {
-                        setupVoices(myContext)
+                        setupVoicesWrapped(myContext)
+                        //setupVoices(myContext)
                     },
                     modifier = Modifier.padding(8.dp)
                     //.fillMaxWidth()
@@ -276,12 +292,12 @@ class MainActivity : ComponentActivity() {
                 if (uri != null) {
                     //val lines = readFile(context, uri)
                     reportIt("Reading lines")
-                    scope.launch {
-                        val lines = readFile(myContext, uri)
-                        theFELines = lines.toMutableList()
-                        // Do something with the lines
-                        reportIt("Read lines")
-                    }
+//                    scope.launch {
+//                        val lines = readFile(myContext, uri)
+//                        theFELines = lines.toMutableList()
+//                        // Do something with the lines
+//                        reportIt("Read lines")
+//                    }
                 }
             }) {
                 Text("Read File")
@@ -347,99 +363,99 @@ class MainActivity : ComponentActivity() {
 //    }
 //}
 
+//
+//private fun generateAudioFile(context: Context, frenchText: String): String {
+//    var outputDir = Environment.getExternalStorageDirectory()
+//    reportIt(outputDir.path)
+//
+//    // Obtain the output directory within external files
+//    outputDir = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+//    reportIt(outputDir.path)
+//
+//    // Ensure the output directory exists
+//    outputDir?.mkdirs()
+//
+//    //val outputDir = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+//    val outputFilePath = File(outputDir, "bonjour.mp3")
+//
+//
+//    val frenchText = "Bonjour"
+//    val params = HashMap<String, String>()
+//    params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = "utteranceId"
+//    //val outputFilePath = "bonjour.mp3"
+//    ttsF.synthesizeToFile(frenchText, null, outputFilePath, "utteranceId", )
+//    //ttsF.synthesizeToFile(frenchText, params, File(outputFilePath), "utteranceId", )
+//
+//    var result = "none"
+//    reportIt("Done")
+//
+//    val file = File(outputDir, "bonjour.txt")
+//    val text = "Hello"
+//    try {
+//        //val file = File(filePath)
+//
+//        // Ensure the parent directory exists
+//        file.parentFile?.mkdirs()
+//
+//        // Create FileWriter and BufferedWriter
+//        val fileWriter = FileWriter(file)
+//        val bufferedWriter2 = BufferedWriter(fileWriter)
+//
+//        // Write the text to the file
+//        bufferedWriter2.write(text)
+//
+//        // Close the BufferedWriter and FileWriter
+//        bufferedWriter2.close()
+//        fileWriter.close()
+//    } catch (e: IOException) {
+//        // Handle IOException, if needed
+//        e.printStackTrace()
+//    }
+//
+//    //reportIt(outputDir)
+//    return result
+//}
+//
+//private fun idk(): String {
+//
+//    val outputDir = Environment.getExternalStorageDirectory()
+//    reportIt(outputDir.path)
+//    //val outputDir = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+//    val outputFilePath = File(outputDir, "bonjour.mp3")
+//
+//
+//    val frenchText = "Bonjour"
+//    val params = HashMap<String, String>()
+//    params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = "utteranceId"
+//    //val outputFilePath = "bonjour.mp3"
+//    ttsF.synthesizeToFile(frenchText, null, outputFilePath, "utteranceId", )
+//    //ttsF.synthesizeToFile(frenchText, params, File(outputFilePath), "utteranceId", )
+//
+//    var result = "none"
+//    reportIt("Done")
+//    //reportIt(outputDir)
+//    return result
+//}
+//
 
-private fun generateAudioFile(context: Context, frenchText: String): String {
-    var outputDir = Environment.getExternalStorageDirectory()
-    reportIt(outputDir.path)
-
-    // Obtain the output directory within external files
-    outputDir = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
-    reportIt(outputDir.path)
-
-    // Ensure the output directory exists
-    outputDir?.mkdirs()
-
-    //val outputDir = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
-    val outputFilePath = File(outputDir, "bonjour.mp3")
-
-
-    val frenchText = "Bonjour"
-    val params = HashMap<String, String>()
-    params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = "utteranceId"
-    //val outputFilePath = "bonjour.mp3"
-    ttsF.synthesizeToFile(frenchText, null, outputFilePath, "utteranceId", )
-    //ttsF.synthesizeToFile(frenchText, params, File(outputFilePath), "utteranceId", )
-
-    var result = "none"
-    reportIt("Done")
-
-    val file = File(outputDir, "bonjour.txt")
-    val text = "Hello"
-    try {
-        //val file = File(filePath)
-
-        // Ensure the parent directory exists
-        file.parentFile?.mkdirs()
-
-        // Create FileWriter and BufferedWriter
-        val fileWriter = FileWriter(file)
-        val bufferedWriter2 = BufferedWriter(fileWriter)
-
-        // Write the text to the file
-        bufferedWriter2.write(text)
-
-        // Close the BufferedWriter and FileWriter
-        bufferedWriter2.close()
-        fileWriter.close()
-    } catch (e: IOException) {
-        // Handle IOException, if needed
-        e.printStackTrace()
-    }
-
-    //reportIt(outputDir)
-    return result
-}
-
-private fun idk(): String {
-
-    val outputDir = Environment.getExternalStorageDirectory()
-    reportIt(outputDir.path)
-    //val outputDir = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
-    val outputFilePath = File(outputDir, "bonjour.mp3")
-
-
-    val frenchText = "Bonjour"
-    val params = HashMap<String, String>()
-    params[TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID] = "utteranceId"
-    //val outputFilePath = "bonjour.mp3"
-    ttsF.synthesizeToFile(frenchText, null, outputFilePath, "utteranceId", )
-    //ttsF.synthesizeToFile(frenchText, params, File(outputFilePath), "utteranceId", )
-
-    var result = "none"
-    reportIt("Done")
-    //reportIt(outputDir)
-    return result
-}
+////This reads a file and returns a list of lines
+//suspend fun readFile(context: Context, uri: Uri): List<String> {
+//    val lines = mutableListOf<String>()
+//    var count = 0
+//    context.contentResolver.openInputStream(uri)?.bufferedReader().use { reader ->
+//        reader?.forEachLine { line ->
+//            lines.add(line)
+//            count++
+//        }
+//    }
+//    reportIt("Read: $count lines")
+//    return lines
+//}
 
 
 
 
-
-//This reads a file and returns a list of lines
-suspend fun readFile(context: Context, uri: Uri): List<String> {
-    val lines = mutableListOf<String>()
-    var count = 0
-    context.contentResolver.openInputStream(uri)?.bufferedReader().use { reader ->
-        reader?.forEachLine { line ->
-            lines.add(line)
-            count++
-        }
-    }
-    reportIt("Read: $count lines")
-    return lines
-}
-
-private fun setupVoices(myContext: Context) {
+private suspend fun setupVoices(myContext: Context) {
     reportIt("Setting up voices")
     ttsE = TextToSpeech(myContext) { status ->
         if (status == TextToSpeech.SUCCESS) {
@@ -466,6 +482,23 @@ private fun setupVoices(myContext: Context) {
                     emptySet()
                 )
                 ttsE.voice = eVoice
+                ttsE.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onStart(utteranceId: String?) {
+                        ttsE_hasStarted = true
+                    }
+
+                    override fun onDone(utteranceId: String?) {
+                        ttsE_hasCompleted = true
+                    }
+
+                    override fun onError(utteranceId: String?, errorCode: Int) {
+                        super.onError(utteranceId, errorCode)
+                    }
+
+                    @Deprecated("Deprecated in Java")
+                    override fun onError(utteranceId: String?) {
+                    }
+                })
                 ttsE_setup = true
             }
         }
@@ -505,11 +538,51 @@ private fun setupVoices(myContext: Context) {
                 tts1.setSpeechRate(0.9f) // 0.9 slight slower
                 //tts1.setSpeechRate(vocabList.frenchSpeed) // Faster speech
                 //ttsE.setPitch(0.8f) // Lower pitch
+                tts1.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onStart(utteranceId: String?) {
+                        ttsF_hasStarted = true
+                    }
+
+                    override fun onDone(utteranceId: String?) {
+                        ttsF_hasCompleted = true
+                    }
+
+                    override fun onError(utteranceId: String?, errorCode: Int) {
+                        super.onError(utteranceId, errorCode)
+                    }
+
+                    @Deprecated("Deprecated in Java")
+                    override fun onError(utteranceId: String?) {
+                    }
+                })
             }
         }
     }
     ttsF = tts1
     ttsF_setup = true
+    delay(1000)
+    ttsE.speak("I am the english voice", TextToSpeech.QUEUE_FLUSH, null, "")
+    do {
+        delay(100)
+    } while (!ttsE_hasStarted)
+    //speaking
+    do {
+        delay(100)
+    } while (!ttsE_hasCompleted)
+    ttsE_hasStarted = false
+    ttsE_hasCompleted = false
+    delay(1000)
+    ttsF.speak("je suis la voix française", TextToSpeech.QUEUE_FLUSH, null, "")
+    do {
+        delay(100)
+    } while (!ttsF_hasStarted)
+    //speaking
+    do {
+        delay(100)
+    } while (!ttsF_hasCompleted)
+    ttsF_hasStarted = false
+    ttsF_hasCompleted = false
+    reportIt("  Voice setup complete.")
 }
 
 
@@ -527,11 +600,78 @@ private fun setupVoices(myContext: Context) {
 //}
 
 
+fun deleteFilesInFolder(context: Context, folderPath: String) {
+    val resolver = context.contentResolver
+    val selectionArgs = arrayOf("%$folderPath%")
+    val cursor = resolver.query(
+        MediaStore.Files.getContentUri("external"),
+        arrayOf(MediaStore.Files.FileColumns._ID),
+        "${MediaStore.Files.FileColumns.DATA} LIKE ?",
+        selectionArgs,
+        null
+    )
+
+    cursor?.use {
+        val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID)
+
+        while (cursor.moveToNext()) {
+            val id = cursor.getLong(idColumn)
+            val uri = MediaStore.Files.getContentUri("external", id)
+            resolver.delete(uri, null, null)
+        }
+    }
+//    val folder = File(folderPath)
+//    if (folder.exists()) {
+//        reportIt("Folder exists: $folderPath ")
+//        reportIt("  Deleting contents")
+//        val resolver: ContentResolver = context.contentResolver
+//        val uri: Uri = MediaStore.Files.getContentUri("external")
+//        val selection = MediaStore.Files.FileColumns.DATA + " LIKE ?"
+//        val selectionArgs = arrayOf("$folderPath/%")
+//        // Query the MediaStore to find the files in the folder
+//        val cursor = resolver.query(uri, null, selection, selectionArgs, null)
+//        cursor?.use {
+//            while (it.moveToNext()) {
+//                // Get the URI of the file
+//                val colIdx = it.getColumnIndex(MediaStore.Files.FileColumns._ID)
+//                if (colIdx >= 0) {
+//                    val fileUri = ContentUris.withAppendedId(uri, it.getLong(colIdx))
+//                    // Delete the file
+//                    resolver.delete(fileUri, null, null)
+//                }
+//            }
+//            reportIt("  Done deleting.")
+//        }
+//    }
+}
+
+
+fun deleteFolder(context: Context, folderName: String) {
+    reportIt("Try to delete")
+    val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+    //val documentsDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+    val folder = File(documentsDir, folderName)
+    reportIt("Try to ${folder.name}")
+    reportIt("Try to ${folder.path}")
+
+    if (folder.exists() && folder.isDirectory) {
+        reportIt("Try to delete2")
+        folder.deleteRecursively()
+    }
+}
+
+
 suspend fun generateAudioFiles(context: Context ) {
+    val fvName = ttsF.voice.name
+    reportIt("  Using: " + fvName.substring(8, 11) )
     // Get name of phrase file
     val phraseFileName = phrasesFilePathText.value
     //Remove the extension
-    val folderName = "French3Audio/" + File(phraseFileName).nameWithoutExtension
+    val folderName = "French3Audio/" + File(phraseFileName).nameWithoutExtension + "_" + fvName.substring(8, 11)
+
+    //Delete folder if there
+    deleteFolder(context, folderName)
+
     // Create the folder in Documents
     reportIt("  Creating directory: $folderName")
     createDirectoryInDocuments(context, folderName)
@@ -549,6 +689,22 @@ suspend fun generateAudioFiles(context: Context ) {
     }
     reportIt("Read: $count lines")
 
+
+    deleteFolder(context, "French3Audio/idk/my")
+    //This does not work!!!
+//    val uriTemp = createMediaStoreUri(context, folderName, "test.txt")
+//    val aPath = uriTemp.path
+//    reportIt("aPath: $aPath ")
+//    if (aPath != null) {
+//        val file = File(aPath)
+//        val folderPath = file.parent
+//        reportIt("folderPath: $folderPath ")
+//        if (folderPath != null) {
+//            reportIt("folderPath: $folderPath ")
+//            deleteFilesInFolder(context, folderPath)
+//        }
+//    }
+
     //return
 
     //Open the phrase file
@@ -565,16 +721,53 @@ suspend fun generateAudioFiles(context: Context ) {
                     // Create a unique filename for each part
                     val filename1 = "item_$index" + "_fr.wav"
                     val filename2 = "item_$index" + "_en.wav"
+                    val filename3 = "item_$index.wav"
                     // Create an output Uri for each file
                     val uri1 = createMediaStoreUri(context, folderName, filename1)
                     val uri2 = createMediaStoreUri(context, folderName, filename2)
+                    val uri3 = createMediaStoreUri(context, folderName, filename3)
                     // Create a ParcelFileDescriptor for each Uri
                     val pfd1 = context.contentResolver.openFileDescriptor(uri1, "w")
                     val pfd2 = context.contentResolver.openFileDescriptor(uri2, "w")
                     // Synthesize the speech to a file
                     ttsF.synthesizeToFile(temp1, Bundle(), pfd1!!, "ttsF_$index")
                     ttsE.synthesizeToFile(temp2, Bundle(), pfd2!!, "ttsE_$index")
-                    delay(1000)
+
+                    do {
+                        delay(100)
+                    } while (!ttsE_hasStarted)
+                    //speaking
+                    do {
+                        delay(100)
+                    } while (!ttsE_hasCompleted)
+                    ttsE_hasStarted = false
+                    ttsE_hasCompleted = false
+                    do {
+                        delay(100)
+                    } while (!ttsF_hasStarted)
+                    //speaking
+                    do {
+                        delay(100)
+                    } while (!ttsF_hasCompleted)
+                    ttsF_hasStarted = false
+                    ttsF_hasCompleted = false
+                    reportIt("  Another!.")
+                    delay(100)
+
+
+
+
+                    val pathE = uri1.path
+                    val pathF = uri2.path
+                    val path3 = uri3.path
+                    if (pathE != null) {
+                        if (pathF != null) {
+                            if (path3 != null) {
+                                joinWavFiles(pathE, pathF, path3, 3)
+                            }
+                        }
+                    }
+
                 }
                 else -> {
                     //code
@@ -584,6 +777,34 @@ suspend fun generateAudioFiles(context: Context ) {
         reportIt("  Generated $index items")
     }
 }
+
+
+//import java.io.*
+
+fun joinWavFiles(file1Path: String, file2Path: String, outputPath: String, silenceDuration: Int) {
+    val file1 = File(file1Path)
+    val file2 = File(file2Path)
+    val output = File(outputPath)
+
+    val silenceAfterFrench = ByteArray(silenceDuration * 44100 * 2) // 44100 samples/second * 2 bytes/sample
+    val silenceAfterEnglish = ByteArray(1 * 44100 * 2) // 44100 samples/second * 2 bytes/sample
+
+    val inputStream1 = FileInputStream(file1)
+    val inputStream2 = FileInputStream(file2)
+    val outputStream = FileOutputStream(output)
+
+    inputStream1.copyTo(outputStream)
+    outputStream.write(silenceAfterFrench)
+    inputStream2.copyTo(outputStream)
+    outputStream.write(silenceAfterEnglish)
+    inputStream1.copyTo(outputStream)
+    outputStream.write(silenceAfterFrench)
+
+    inputStream1.close()
+    inputStream2.close()
+    outputStream.close()
+}
+
 
 
 //    reportIt("  Creating directory ")
@@ -724,7 +945,7 @@ private fun createDirectoryInDocuments(context: Context, directoryName: String) 
 fun getListOfFiles(context: Context, directoryName: String): List<String> {
     val listOfFiles = mutableListOf<String>()
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         val resolver = context.contentResolver
         val collection: Uri = MediaStore.Files.getContentUri("external")
         val projection = arrayOf(MediaStore.Files.FileColumns.DISPLAY_NAME)
@@ -739,16 +960,16 @@ fun getListOfFiles(context: Context, directoryName: String): List<String> {
                 listOfFiles.add(displayName)
             }
         }
-    } else {
-        //Log.e("MediaStore", "Cannot get list of files for API < 29.")
-    }
+    //} else {
+    //    //Log.e("MediaStore", "Cannot get list of files for API < 29.")
+    //}
 
     return listOfFiles
 }
 
 
 fun writeTextToFile(context: Context, directoryName: String, fileName: String, text: String) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         val resolver: ContentResolver = context.contentResolver
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
@@ -765,9 +986,9 @@ fun writeTextToFile(context: Context, directoryName: String, fileName: String, t
             }
             //Log.d("MediaStore", "Successfully wrote to file: $fileName in $directoryName.")
         }
-    } else {
-        //Log.e("MediaStore", "Cannot write to file for API < 29.")
-    }
+    //} else {
+    //    //Log.e("MediaStore", "Cannot write to file for API < 29.")
+    //}
 }
 
 
