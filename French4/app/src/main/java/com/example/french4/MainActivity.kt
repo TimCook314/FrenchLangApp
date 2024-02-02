@@ -46,6 +46,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Slider
+import androidx.compose.runtime.mutableFloatStateOf
 //import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.mutableStateOf
 //import androidx.compose.runtime.getValue
@@ -66,7 +68,10 @@ import kotlinx.coroutines.delay
 
 import com.arthenica.mobileffmpeg.FFmpeg
 import java.io.File
+import kotlin.math.roundToInt
 
+private var sliderPosition_pausebetween  by mutableFloatStateOf(3f)
+private var sliderPosition_pauseafter  by mutableFloatStateOf(3f)
 
 private var tts_E_setup = false
 private var tts_E_voice by mutableStateOf("undefined")
@@ -194,7 +199,7 @@ fun GenerateScreen() {
 
         Divider(color = Color.LightGray, thickness = 1.dp)
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             Button(onClick = {
                 setupEnglishVoiceWrapped(context)
@@ -203,11 +208,11 @@ fun GenerateScreen() {
             }
             Text(tts_E_voice, textAlign = TextAlign.End, modifier = Modifier.align(Alignment.CenterVertically))
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         Divider(color = Color.LightGray, thickness = 1.dp)
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             Button(onClick = {
                 setupFrenchVoicesWrapped(context)
@@ -216,9 +221,7 @@ fun GenerateScreen() {
             }
             //Text(tts_E_voice, textAlign = TextAlign.End, modifier = Modifier.align(Alignment.CenterVertically))
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        Divider(color = Color.LightGray, thickness = 1.dp)
-
+        Spacer(modifier = Modifier.height(4.dp))
         Row {
             Checkbox(
                 checked = tts_F1_checked,
@@ -240,6 +243,7 @@ fun GenerateScreen() {
             )
             Text(tts_F2_voice, textAlign = TextAlign.End, modifier = Modifier.align(Alignment.CenterVertically))
         }
+        Spacer(modifier = Modifier.height(4.dp))
         Row {
             Checkbox(
                 checked = tts_F3_checked,
@@ -261,6 +265,7 @@ fun GenerateScreen() {
             )
             Text(tts_F4_voice, textAlign = TextAlign.End, modifier = Modifier.align(Alignment.CenterVertically))
         }
+        Spacer(modifier = Modifier.height(4.dp))
         Row {
             Checkbox(
                 checked = tts_F5_checked,
@@ -282,34 +287,40 @@ fun GenerateScreen() {
             )
             Text(tts_F6_voice, textAlign = TextAlign.End, modifier = Modifier.align(Alignment.CenterVertically))
         }
+        Spacer(modifier = Modifier.height(4.dp))
         Divider(color = Color.LightGray, thickness = 1.dp)
-        Button(
-            onClick = {
-                theFilePicker.launch("text/plain")
-            },
-            modifier = Modifier.padding(8.dp)
-        ) {
-            Text("Select phrase file")
-        }
-        Text(
-            text = phrasesFilePathText.value,
-            //style = MaterialTheme.typography.body1,
-            textAlign = TextAlign.End,
-            modifier = Modifier
-                .padding(top = 8.dp)
-                .padding(bottom = 8.dp)
+        Spacer(modifier = Modifier.height(4.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Button(
+                onClick = {
+                    theFilePicker.launch("text/plain")
+                },
+                //modifier = Modifier.padding(8.dp)
+            ) {
+                Text("Select phrase file")
+            }
+            Text(
+                text = phrasesFilePathText.value,
+                //style = MaterialTheme.typography.body1,
+                textAlign = TextAlign.End,
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+//                    .padding(bottom = 8.dp)
 //                    modifier = Modifier
 //                        .padding(bottom = 16.dp)
 //                        .align(alignment = Alignment.End)
-        )
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
         Divider(color = Color.LightGray, thickness = 1.dp)
+        Spacer(modifier = Modifier.height(4.dp))
         Button(
             onClick = {
                 generateAudioFilesWrapped(context)
             },
             enabled = isSynthesizeAudioButtonEnabled.value,
             modifier = Modifier
-                .padding(8.dp)
+                //.padding(8.dp)
                 .fillMaxWidth()
         ) {
             Text("Generate Audio Files")
@@ -321,7 +332,50 @@ fun GenerateScreen() {
 
 @Composable
 fun SettingsScreen() {
-    Text(text = "Screen 3", style = MaterialTheme.typography.headlineMedium)
+    Column {
+        Text(text = "Settings", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(12.dp))
+        // Text label displaying the current value
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text(text = "Pause between:  ")
+            Text(text = "Value: ${sliderPosition_pausebetween.roundToInt()}")
+        }
+        // Slider
+        Slider(
+            value = sliderPosition_pausebetween,
+            onValueChange = { newValue ->
+                sliderPosition_pausebetween = newValue
+            },
+            valueRange = 1f..10f,
+            steps = 9,  // 10 - 1 = 9 steps for values between 1 to 10
+            onValueChangeFinished = {
+                // This is called when the user stops dragging the Slider
+                // You can use this to update the value to some other state or ViewModel
+                // updateYourVariableHere(sliderPosition.value.roundToInt())
+            }
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text(text = "Pause after:  ")
+            Text(text = "Value: ${sliderPosition_pauseafter.roundToInt()}")
+        }
+        // Slider
+        Slider(
+            value = sliderPosition_pauseafter,
+            onValueChange = { newValue ->
+                sliderPosition_pauseafter = newValue
+            },
+            valueRange = 1f..10f,
+            steps = 9,  // 10 - 1 = 9 steps for values between 1 to 10
+            onValueChangeFinished = {
+                // This is called when the user stops dragging the Slider
+                // You can use this to update the value to some other state or ViewModel
+                // updateYourVariableHere(sliderPosition.value.roundToInt())
+            }
+        )
+
+
+    }
+
 }
 
 @Preview(showBackground = true)
@@ -369,7 +423,7 @@ private suspend fun setupEnglishVoice( context: Context ) {
             if (enVoiceNames.isNotEmpty()) {
                 val english = Locale("en", "US")
                 val txt = enVoiceNames.random()
-                reportGenText("  Using English voice: $txt")
+                //reportGenText("  Using English voice: $txt")
                 val eVoice = Voice(
                     txt,
                     english,
@@ -528,7 +582,8 @@ fun TextListGen() {
     val listState = rememberLazyListState()
     //val coroutineScope = rememberCoroutineScope()
     LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth(),
         state = listState,
         //contentPadding = PaddingValues(16.dp)
     ) {
@@ -776,15 +831,16 @@ fun generateSilenceFile(durationInSeconds: Int, outputPath: String) {
     @Suppress("SpellCheckingInspection")
     val command = arrayOf(
         "-f", "lavfi",
-        "-i", "anullsrc=r=44100:cl=stereo",
+        //"-i", "anullsrc=r=44100:cl=stereo",
+        "-i", "anullsrc=r=24000:cl=mono",
         "-t", durationInSeconds.toString(),
-        "-q:a", "9", // Lower quality since it's just silence
+        //"-t", "%1.f".format(Locale.ROOT, durationInSeconds),
         outputPath
     )
 
     val returnCode = FFmpeg.execute(command)
     if (returnCode == 0) {
-        reportGenText("Silence file generated successfully at: $outputPath")
+        //reportGenText("Silence file generated successfully at: $outputPath")
     } else {
         reportGenText("Failed to generate silence file.")
     }
@@ -837,13 +893,13 @@ private fun createDirectoryInDocuments(context: Context, directoryName: String) 
         reportGenText("  Failed to created directory: $directoryName in Documents")
         //Log.e("MediaStore", "Failed to create directory: $directoryName in Documents.")
     } else {
-        reportGenText("  Created directory: $directoryName in Documents")
+        //reportGenText("  Created directory: $directoryName in Documents")
         //Log.d("MediaStore", "Successfully created directory: $directoryName in Documents.")
     }
 }
 
 fun deleteFolder(folderName: String) {
-    reportGenText("Try to delete")
+    //reportGenText("Try to delete")
     val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
     val folder = File(documentsDir, folderName)
     if (folder.exists() && folder.isDirectory) {
@@ -907,7 +963,7 @@ private suspend fun generateAudioFiles(context: Context ) {
         }
         ips?.close()
     }
-    reportGenText("Read: $count lines")
+    //reportGenText("Read: $count lines")
 
 
     val validVoiceList = mutableListOf<Int>()
@@ -920,17 +976,20 @@ private suspend fun generateAudioFiles(context: Context ) {
 
 
     val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-    val folder = File(documentsDir, "$tmpfolder/silence_3.wav")
-    generateSilenceFile( 3, folder.absolutePath)
-    reportGenText("  Generated!")
+    var namePath = File(documentsDir, "$tmpfolder/silence_between.wav")
+    generateSilenceFile( sliderPosition_pausebetween.roundToInt(), namePath.absolutePath)
+    namePath = File(documentsDir, "$tmpfolder/silence_after.wav")
+    generateSilenceFile( sliderPosition_pauseafter.roundToInt(), namePath.absolutePath)
+
+    //reportGenText("  Generated!")
 
     var countValue = 0
-    reportGenText("  Generating stuff ")
+    reportGenText("  Generating audio files")
     lines.forEachIndexed { index, line ->
         val parts = line.split(";")
         if (parts.size >= 4) {
             val temp0 = parts[0].lowercase().trim()
-            val tempV = parts[1].trim()
+            //val tempV = parts[1].trim()
             val tempF = parts[2].trim()
             val tempE = parts[3].trim()
             when (temp0) {
@@ -953,25 +1012,25 @@ private suspend fun generateAudioFiles(context: Context ) {
                     tts_E1.synthesizeToFile(tempE, Bundle(), pfd2!!, "ttsE_$index")
 
                     do {
-                        delay(50)
+                        delay(20)
                     } while (!ttsE_hasStarted)
                     //speaking
                     do {
-                        delay(50)
+                        delay(20)
                     } while (!ttsE_hasCompleted)
                     ttsE_hasStarted = false
                     ttsE_hasCompleted = false
                     do {
-                        delay(50)
+                        delay(20)
                     } while (!ttsF_hasStarted)
                     //speaking
                     do {
-                        delay(50)
+                        delay(20)
                     } while (!ttsF_hasCompleted)
                     ttsF_hasStarted = false
                     ttsF_hasCompleted = false
                     //reportIt("  Another!.")
-                    delay(100)
+                    delay(20)
 
                     pfd1.close()
                     pfd2.close()
@@ -979,16 +1038,17 @@ private suspend fun generateAudioFiles(context: Context ) {
                     //Create one file
                     val fileFr = File(documentsDir, "$tmpfolder/$filename1")
                     val fileEn = File(documentsDir, "$tmpfolder/$filename2")
-                    val fileSl = File(documentsDir, "$tmpfolder/silence_3.wav")
+                    val fileSb = File(documentsDir, "$tmpfolder/silence_between.wav")
+                    val fileSa = File(documentsDir, "$tmpfolder/silence_after.wav")
                     val fileOt = File(documentsDir, "$newfolder/$filename3")
 
                     val audioFiles = arrayOf(
                         fileFr.absolutePath,
-                        fileSl.absolutePath,
+                        fileSb.absolutePath,
                         fileEn.absolutePath,
-                        fileSl.absolutePath,
+                        fileSb.absolutePath,
                         fileFr.absolutePath,
-                        fileSl.absolutePath,
+                        fileSa.absolutePath,
                     )
                     concatenateAudios(audioFiles, fileOt.absolutePath)
                     if (countValue % 10 == 0) {
@@ -999,7 +1059,8 @@ private suspend fun generateAudioFiles(context: Context ) {
         }
     }
     deleteFolder( tmpfolder)
-    reportGenText("  Done! Generated $countValue items")
+    reportGenText("Done!")
+    reportGenText("  Generated $countValue items")
 }
 
 
@@ -1032,7 +1093,7 @@ suspend fun concatenateAudios(filePaths: Array<String>, outputPath: String) {
 
     val returnCode = FFmpeg.execute(command)
     if (returnCode == 0) {
-        reportGenText("Generated: $outputPath")
+        //reportGenText("Generated: $outputPath")
     } else {
         reportGenText("Failed to generate file.")
     }
