@@ -64,14 +64,15 @@ import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-
+import kotlinx.coroutines.withContext
 
 import com.arthenica.mobileffmpeg.FFmpeg
 import java.io.File
 import kotlin.math.roundToInt
 
-private var sliderPosition_pausebetween  by mutableFloatStateOf(3f)
-private var sliderPosition_pauseafter  by mutableFloatStateOf(3f)
+private var sliderPosition_pauseBefore  by mutableFloatStateOf(1f)
+private var sliderPosition_pauseBetween  by mutableFloatStateOf(3f)
+private var sliderPosition_pauseAfter  by mutableFloatStateOf(3f)
 
 private var tts_E_setup = false
 private var tts_E_voice by mutableStateOf("undefined")
@@ -337,14 +338,32 @@ fun SettingsScreen() {
         Spacer(modifier = Modifier.height(12.dp))
         // Text label displaying the current value
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(text = "Pause between:  ")
-            Text(text = "Value: ${sliderPosition_pausebetween.roundToInt()}")
+            Text(text = "Pause before:  ")
+            Text(text = "Value: $sliderPosition_pauseBefore")
         }
         // Slider
         Slider(
-            value = sliderPosition_pausebetween,
+            value = sliderPosition_pauseBefore,
             onValueChange = { newValue ->
-                sliderPosition_pausebetween = newValue
+                sliderPosition_pauseBefore = newValue
+            },
+            valueRange = 0.5f..10f,
+            steps = 18,  // 10 - 1 = 9 steps for values between 1 to 10
+            onValueChangeFinished = {
+                // This is called when the user stops dragging the Slider
+                // You can use this to update the value to some other state or ViewModel
+                // updateYourVariableHere(sliderPosition.value.roundToInt())
+            }
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text(text = "Pause between:  ")
+            Text(text = "Value: ${sliderPosition_pauseBetween.roundToInt()}")
+        }
+        // Slider
+        Slider(
+            value = sliderPosition_pauseBetween,
+            onValueChange = { newValue ->
+                sliderPosition_pauseBetween = newValue
             },
             valueRange = 1f..10f,
             steps = 9,  // 10 - 1 = 9 steps for values between 1 to 10
@@ -356,13 +375,13 @@ fun SettingsScreen() {
         )
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(text = "Pause after:  ")
-            Text(text = "Value: ${sliderPosition_pauseafter.roundToInt()}")
+            Text(text = "Value: ${sliderPosition_pauseAfter.roundToInt()}")
         }
         // Slider
         Slider(
-            value = sliderPosition_pauseafter,
+            value = sliderPosition_pauseAfter,
             onValueChange = { newValue ->
-                sliderPosition_pauseafter = newValue
+                sliderPosition_pauseAfter = newValue
             },
             valueRange = 1f..10f,
             steps = 9,  // 10 - 1 = 9 steps for values between 1 to 10
@@ -827,7 +846,7 @@ private fun setupFVoice6(context: Context, voice: String) {
 
 
 
-fun generateSilenceFile(durationInSeconds: Int, outputPath: String) {
+fun generateSilenceFile(durationInSeconds: Float, outputPath: String) {
     @Suppress("SpellCheckingInspection")
     val command = arrayOf(
         "-f", "lavfi",
@@ -937,17 +956,17 @@ private suspend fun generateAudioFiles(context: Context ) {
     // Get name of phrase file
     val phraseFileName = phrasesFilePathText.value
     //Remove the extension
-    val newfolder = "French4Audio/" + File(phraseFileName).nameWithoutExtension
-    val tmpfolder = "French4Audio/" + "temp"
+    val newFolder = "French4Audio/" + File(phraseFileName).nameWithoutExtension
+    val tmpFolder = "French4Audio/" + "temp"
 
     //Delete folder if there
-    deleteFolder( newfolder)
-    deleteFolder( tmpfolder)
+    deleteFolder( newFolder)
+    deleteFolder( tmpFolder)
 
     // Create the folder in Documents
-    reportGenText("  Creating directory: $newfolder")
-    createDirectoryInDocuments(context, newfolder)
-    createDirectoryInDocuments(context, tmpfolder)
+    reportGenText("  Creating directory: $newFolder")
+    createDirectoryInDocuments(context, newFolder)
+    createDirectoryInDocuments(context, tmpFolder)
 
 
     val lines = mutableListOf<String>()
@@ -961,7 +980,10 @@ private suspend fun generateAudioFiles(context: Context ) {
                 count++
             }
         }
-        ips?.close()
+        //ips?.close()
+        withContext(Dispatchers.IO) {
+            ips?.close()
+        }
     }
     //reportGenText("Read: $count lines")
 
@@ -976,10 +998,12 @@ private suspend fun generateAudioFiles(context: Context ) {
 
 
     val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-    var namePath = File(documentsDir, "$tmpfolder/silence_between.wav")
-    generateSilenceFile( sliderPosition_pausebetween.roundToInt(), namePath.absolutePath)
-    namePath = File(documentsDir, "$tmpfolder/silence_after.wav")
-    generateSilenceFile( sliderPosition_pauseafter.roundToInt(), namePath.absolutePath)
+    var namePath = File(documentsDir, "$tmpFolder/silence_before.wav")
+    generateSilenceFile( sliderPosition_pauseBefore, namePath.absolutePath)
+    namePath = File(documentsDir, "$tmpFolder/silence_between.wav")
+    generateSilenceFile( sliderPosition_pauseBetween, namePath.absolutePath)
+    namePath = File(documentsDir, "$tmpFolder/silence_after.wav")
+    generateSilenceFile( sliderPosition_pauseAfter, namePath.absolutePath)
 
     //reportGenText("  Generated!")
 
@@ -1000,9 +1024,9 @@ private suspend fun generateAudioFiles(context: Context ) {
                     val filename2 = "item_$index" + "_en.wav"
                     val filename3 = "item_$index.wav"
                     // Create an output Uri for each file
-                    val uri1 = createMediaStoreUri(context, tmpfolder, filename1)
-                    val uri2 = createMediaStoreUri(context, tmpfolder, filename2)
-                    //val uri3 = createMediaStoreUri(context, tmpfolder, filename3)
+                    val uri1 = createMediaStoreUri(context, tmpFolder, filename1)
+                    val uri2 = createMediaStoreUri(context, tmpFolder, filename2)
+                    //val uri3 = createMediaStoreUri(context, tmpFolder, filename3)
                     // Create a ParcelFileDescriptor for each Uri
                     val pfd1 = context.contentResolver.openFileDescriptor(uri1, "w")
                     val pfd2 = context.contentResolver.openFileDescriptor(uri2, "w")
@@ -1036,19 +1060,21 @@ private suspend fun generateAudioFiles(context: Context ) {
                     pfd2.close()
 
                     //Create one file
-                    val fileFr = File(documentsDir, "$tmpfolder/$filename1")
-                    val fileEn = File(documentsDir, "$tmpfolder/$filename2")
-                    val fileSb = File(documentsDir, "$tmpfolder/silence_between.wav")
-                    val fileSa = File(documentsDir, "$tmpfolder/silence_after.wav")
-                    val fileOt = File(documentsDir, "$newfolder/$filename3")
+                    val fileFr = File(documentsDir, "$tmpFolder/$filename1")
+                    val fileEn = File(documentsDir, "$tmpFolder/$filename2")
+                    val fileS1 = File(documentsDir, "$tmpFolder/silence_before.wav")
+                    val fileS2 = File(documentsDir, "$tmpFolder/silence_between.wav")
+                    val fileS3 = File(documentsDir, "$tmpFolder/silence_after.wav")
+                    val fileOt = File(documentsDir, "$newFolder/$filename3")
 
                     val audioFiles = arrayOf(
+                        fileS1.absolutePath,
                         fileFr.absolutePath,
-                        fileSb.absolutePath,
+                        fileS2.absolutePath,
                         fileEn.absolutePath,
-                        fileSb.absolutePath,
+                        fileS2.absolutePath,
                         fileFr.absolutePath,
-                        fileSa.absolutePath,
+                        fileS3.absolutePath,
                     )
                     concatenateAudios(audioFiles, fileOt.absolutePath)
                     if (countValue % 10 == 0) {
@@ -1058,7 +1084,7 @@ private suspend fun generateAudioFiles(context: Context ) {
             }
         }
     }
-    deleteFolder( tmpfolder)
+    deleteFolder( tmpFolder)
     reportGenText("Done!")
     reportGenText("  Generated $countValue items")
 }
@@ -1075,9 +1101,9 @@ suspend fun concatenateAudios(filePaths: Array<String>, outputPath: String) {
     val fileListContent = filePaths.joinToString(separator = "\n") { "file '$it'" }
 
     // Write the content to a temporary file list
-    val tmpfolder = "French4Audio/" + "temp"
+    val tmpFolder = "French4Audio/" + "temp"
     val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-    val fileListPath = File(documentsDir, "$tmpfolder/file_list.txt")
+    val fileListPath = File(documentsDir, "$tmpFolder/file_list.txt")
     //val fileListPath =
     File(fileListPath.absolutePath).writeText(fileListContent)
     delay(50)
