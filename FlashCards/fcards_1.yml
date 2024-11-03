@@ -1,0 +1,13 @@
+name: fcards_1
+# conda env create --file fcards_1.yml
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.11,<3.12
+  - gtts
+  - sqlalchemy
+#  - conda
+#  - conda-pack>=0.8.0
+  - pip>=24.2
+  - pip:
+#    - keyring 

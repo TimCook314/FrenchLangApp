@@ -38,3 +38,6 @@ google-services.json
 #Python venv
 FrenchPythonDev/env
 FrenchPythonDev/audio
+
+# For .venv folders anywhere
+.venv

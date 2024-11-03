@@ -1,0 +1,68 @@
+eText	article	fText	gender	quantity
+bananes	les	bananas		
+boulangerie	la	bakery		
+bouteille	la	bottle		
+bouteilles	les	bottles		
+chaise	la	chair		
+chaises	les	chairs		
+chocolat	le	chocolate		
+croissants	les	croissants		
+cuisine	la	kitchen		
+dessert	le	dessert		
+eau	l'	water		
+gâteau	le	cake		
+jus	le	juice		
+lait	le	milk		
+légume	le	vegetable		
+oeuf	l'	egg		
+orange	l'	orange		
+oranges	les	oranges		
+petit déjeuner	le	breakfast		
+pizza	la	pizza		
+pizzas	les	pizzas		
+placard	le	cupboard		
+placards	les	cupboards		
+repas	les	meal		
+repas	les	meals		
+restaurant	le	restaurant		
+restaurants	les	restaurants		
+sel	le	salt		
+sucre	le	sugar		
+supermarché	le	supermarket		
+supermarchés	les	supermarkets		
+table	la	table		
+tables	les	tables		
+tasse	la	cup		
+tasses	les	cups		
+verre	le	glass		
+frigo	le	fridge		
+baguette	la	baguette		
+plat	le	dish		
+fruit	le	fruit		
+pomme	la	apple		
+dîner	le	dinner		
+fromage	le	cheese		
+salade	la	salad		
+pain	le	bread		
+sandwich	le	sandwich		
+eau	l'	water		
+vin	le	wine		
+serveur	le	server		
+serveuses	les	waitresses		
+thé	le	tea		
+brioche	la	bun		
+beurre	le	butter		
+miel	le	honey		
+cuillère	la	spoon		
+cuillères	les	spoons		
+fourchette	la	fork		
+fourchettes	les	forks		
+couteau	le	knife		
+couteaux	les	knives		
+assiette	l'	dinner plate		
+assiettes	les	dinner plates		
+plat principal	le	main course		
+vaisselle	la	dishes		
+argenterie	l'	silverware		
+champignon	le	mushroom		
+beurre de cacahuète	le	peanut butter		
